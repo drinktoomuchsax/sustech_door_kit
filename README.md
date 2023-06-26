@@ -36,9 +36,9 @@ _This page is not available in [English](README.en.md) yet._
 - [复刻](#复刻)
   - [物料清单](#物料清单)
   - [所需工具](#所需工具)
-  - [门的部分](#门的部分)
   - [门外模块（exModule）](#门外模块exmodule)
   - [门内模块（inModule）](#门内模块inmodule)
+  - [门的部分](#门的部分)
 - [To Do](#to-do)
 
 
@@ -59,12 +59,6 @@ _This page is not available in [English](README.en.md) yet._
 
 ## 物料清单
 ## 所需工具
-## 门的部分
-### 1.拆门
-### 2.剥线
-### 3.焊接延长线
-### 4.走线
-### 5.装门
 ## 门外模块（exModule）
 ### 1.焊接
 ### 2.开发板刷入程序
@@ -81,6 +75,12 @@ _This page is not available in [English](README.en.md) yet._
 ### 3.调试
 ### 4.安装
 #### a.接线
+## 门的部分
+### 1.拆门
+### 2.剥线
+### 3.焊接延长线
+### 4.走线
+### 5.装门
 
 # To Do
 对功能有任何想法和提议，都欢迎提交issue。当然，保证不保证解决。
