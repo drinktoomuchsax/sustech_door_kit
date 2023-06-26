@@ -11,7 +11,7 @@
   丢掉你的校园卡
 </p>
 <p align="center">
-人脸识别、模糊密码、电子反锁、访客密码……</a>
+人脸识别、模糊密码、电子反锁、访客密码、挟持保护……</a>
 </p>
 </div>
 
@@ -49,6 +49,7 @@ _This page is not available in [English](README.en.md) yet._
 ![password define]()
 ![lock cant open gif]()
 ![random password generator]()
+![single eye lock gif]()
 
 # 原理
 拆开门发现有调试的线，详见[博客](wait-to-be-writed)
