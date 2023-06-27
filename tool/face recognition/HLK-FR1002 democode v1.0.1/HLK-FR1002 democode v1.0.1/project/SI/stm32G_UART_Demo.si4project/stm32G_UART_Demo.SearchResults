@@ -1,0 +1,12 @@
+---- EXTI2_3_IRQHandler Matches (9 in 3 files) ----
+main.c (C:\Users\LENOVO\Desktop\uart_demo\uart_demo\Core\Src) line 108 : void EXTI2_3_IRQHandler(uint16_t GPIO_Pin)
+stm32g0xx_it.h (C:\Users\LENOVO\Desktop\uart_demo\uart_demo\Core\Inc) line 54 : void EXTI2_3_IRQHandler(void);
+uart_demo.htm (C:\Users\LENOVO\Desktop\uart_demo\uart_demo\MDK-ARM\uart_demo) line 26 :  <LI><a href="#[c]">EXTI2_3_IRQHandler</a> from main.o(.text.EXTI2_3_IRQHandler) referenced from startup_stm32g0b1xx.o(RESET)
+uart_demo.htm (C:\Users\LENOVO\Desktop\uart_demo\uart_demo\MDK-ARM\uart_demo) line 379 : <P><STRONG><a name="[c]"></a>EXTI2_3_IRQHandler</STRONG> (Thumb, 72 bytes, Stack size 16 bytes, main.o(.text.EXTI2_3_IRQHandler))
+uart_demo.htm (C:\Users\LENOVO\Desktop\uart_demo\uart_demo\MDK-ARM\uart_demo) line 380 : <BR><BR>[Stack]<UL><LI>Max Depth = 36<LI>Call Chain = EXTI2_3_IRQHandler &rArr; HAL_GPIO_EXTI_IRQHandler &rArr; HAL_GPIO_EXTI_Falling_Callback
+uart_demo.htm (C:\Users\LENOVO\Desktop\uart_demo\uart_demo\MDK-ARM\uart_demo) line 438 : <BR>[Called By]<UL><LI><a href="#[c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EXTI2_3_IRQHandler
+uart_demo.htm (C:\Users\LENOVO\Desktop\uart_demo\uart_demo\MDK-ARM\uart_demo) line 594 : <BR><BR>[Called By]<UL><LI><a href="#[c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EXTI2_3_IRQHandler
+---- EXTI2_3_IRQHandler Search Errors Encountered (2) ----
+The following 2 files could not be processed:
+C:\Users\LENOVO\Desktop\uart_demo\uart_demo\Core\Src\app_freertos.c : File could not be opened.
+C:\Users\LENOVO\Desktop\uart_demo\uart_demo\Core\Inc\FreeRTOSConfig.h : File could not be opened.

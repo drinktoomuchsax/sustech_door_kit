@@ -1,6 +1,4 @@
-
-
-// some of the BLE code comes from Rui Santos' instructions at https://RandomNerdTutorials.com/esp32-ble-server-client/
+// part of the BLE code comes from Rui Santos' instructions at https://RandomNerdTutorials.com/esp32-ble-server-client/
 #include <Arduino.h>
 // keyboard part
 #include <vector>
@@ -12,6 +10,8 @@ String STATE;
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+// face recognition part
+#include <fr1002.h>
 
 // keyboard part
 vector<int> setpassword = {6, 0, 6, 0};                                 // set your password here !!!
@@ -51,7 +51,10 @@ class MyServerCallbacks : public BLEServerCallbacks // Setup callbacks onConnect
 };
 
 // face recognition part
-uint8_t is_working[6] = {0xEF, 0xAA, 0x11, 0x00, 0x00, 0x11};
+uint8_t set_standby[6] = {0xEF, 0xAA, 0x23, 0x00, 0x00, 0x23};
+uint8_t get_status[6] = {0xEF, 0xAA, 0x11, 0x00, 0x00, 0x11};
+uint8_t go_recognization[8] = {0xEF, 0xAA, 0x12, 0x00, 0x02, 0x00, 0x0A, 0x1A}; // timeout 10s, parity is 0x1A
+uint8_t get_usernameANDid[6] = {0xEF, 0xAA, 0x24, 0x00, 0x00, 0x24};
 
 /**
  * @brief detect which key been pressed
@@ -207,14 +210,19 @@ void setup()
   pServer->getAdvertising()->start();
   Serial.println("Waiting a client connection to notify...");
 }
-
 void loop()
 {
   for (int z = 0; z < 6; z++)
   {
-    Serial2.write(is_working[z]);
+    Serial2.write(get_status[z]);
   }
-  Serial.printf("%x", Serial2.read());
+  vector<uint16_t> data = {};
+  uint16_t dat;
+  dat = Serial2.read();
+  data.push_back(dat);
+  Serial.printf("%x", dat);
+
+  Serial.println();
 
   if (deviceConnected)
   {

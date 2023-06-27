@@ -1,0 +1,1 @@
+uint8_t getParityByte(uint8_t COMMAND[]);
