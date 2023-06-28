@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <vector>
 using namespace std;
 
 uint8_t getParityByte(uint8_t COMMAND[], int length)
@@ -9,4 +10,26 @@ uint8_t getParityByte(uint8_t COMMAND[], int length)
         parityByte ^= COMMAND[i];
     }
     return parityByte;
+}
+vector<uint16_t> receiveMsg(HardwareSerial serial, uint8_t command[], int commandLength)
+{
+    vector<uint16_t> DATA = {};
+    uint16_t dat;
+    for (int d = 0; d < commandLength; d++)
+    {
+        dat = serial.read();
+        DATA.push_back(dat);
+    }
+    return DATA;
+}
+
+void writeMsg(HardwareSerial serial, uint8_t command[], int commandLength)
+{
+    // if (receiveMsg(serial).size() != 0)
+    // {
+    for (int i = 0; i < commandLength; i++)
+    {
+        serial.write(command[i]);
+    }
+    // }
 }

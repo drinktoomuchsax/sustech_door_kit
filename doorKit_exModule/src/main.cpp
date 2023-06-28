@@ -11,7 +11,38 @@ String STATE;
 #include <BLEUtils.h>
 #include <BLE2902.h>
 // face recognition part
-#include <fr1002.h>
+// #include <fr1002.h>
+
+HardwareSerial SERfr1002(2); // rename Serial2 into SERfr1002 (stand for serial for fr1002)
+
+vector<uint16_t> receiveMsg(HardwareSerial serial, uint8_t command[], int commandLength)
+{
+  vector<uint16_t> DATA = {};
+  uint16_t dat;
+  for (int d = 0; d < commandLength; d++)
+  {
+    dat = serial.read();
+    DATA.push_back(dat);
+  }
+  return DATA;
+}
+
+void writeMsg(HardwareSerial serial, uint8_t command[], int commandLength)
+{
+  // if (receiveMsg(serial).size() != 0)
+  // {
+  Serial.println("1");
+  for (int i = 0; i < commandLength; i++)
+  {
+    Serial.println(i);
+    if (serial.availableForWrite())
+    {
+      serial.write(command[i]);
+    }
+  }
+  Serial.println("3");
+  // }
+}
 
 // keyboard part
 vector<int> setpassword = {6, 0, 6, 0};                                 // set your password here !!!
@@ -174,10 +205,11 @@ bool verifyPSWD(vector<int> PSWD)
     return false;
   }
 }
+
 void setup()
 {
   Serial.begin(115200);
-  Serial2.begin(115200, SERIAL_8N1, 16, 17); // uart port for hlk-fr1002 face recogniton module with baud rate 115200 bps, 8_data_bit, No_parity, 1_stop_bit
+  SERfr1002.begin(115200, SERIAL_8N1, 16, 17); // uart port for hlk-fr1002 face recogniton module with baud rate 115200 bps, 8_data_bit, No_parity, 1_stop_bit
 
   BLEDevice::init(bleServerName);
   BLEServer *pServer = BLEDevice::createServer();
@@ -212,17 +244,32 @@ void setup()
 }
 void loop()
 {
-  for (int z = 0; z < 6; z++)
+  // 0.5ms finish this for loop
+  // for (int i = 0; i < 6; i++)
+  // {
+  //   SERfr1002.write(get_status[i]);
+  //
+  if (SERfr1002.availableForWrite())
   {
-    Serial2.write(get_status[z]);
+    writeMsg(SERfr1002, get_status, 6);
   }
-  vector<uint16_t> data = {};
-  uint16_t dat;
-  dat = Serial2.read();
-  data.push_back(dat);
-  Serial.printf("%x", dat);
+  if (SERfr1002.availableForWrite())
+  {
+    writeMsg(SERfr1002, set_standby, 6);
+  }
 
-  Serial.println();
+  // 0.7ms finish to receive
+  vector<uint16_t> recData = {};
+  if (SERfr1002.available())
+  {
+    recData = receiveMsg(SERfr1002, get_status, 9);
+    for (int s = 0; s < 9; s++)
+    {
+      Serial.println(recData[s]);
+    }
+  }
+
+  delay(10000);
 
   if (deviceConnected)
   {
