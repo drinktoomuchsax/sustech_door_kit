@@ -25,11 +25,8 @@ vector<uint16_t> receiveMsg(HardwareSerial serial, uint8_t command[], int comman
 
 void writeMsg(HardwareSerial serial, uint8_t command[], int commandLength)
 {
-    // if (receiveMsg(serial).size() != 0)
-    // {
     for (int i = 0; i < commandLength; i++)
     {
         serial.write(command[i]);
     }
-    // }
 }

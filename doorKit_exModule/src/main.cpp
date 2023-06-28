@@ -15,35 +15,6 @@ String STATE;
 
 HardwareSerial SERfr1002(2); // rename Serial2 into SERfr1002 (stand for serial for fr1002)
 
-vector<uint16_t> receiveMsg(HardwareSerial serial, uint8_t command[], int commandLength)
-{
-  vector<uint16_t> DATA = {};
-  uint16_t dat;
-  for (int d = 0; d < commandLength; d++)
-  {
-    dat = serial.read();
-    DATA.push_back(dat);
-  }
-  return DATA;
-}
-
-void writeMsg(HardwareSerial serial, uint8_t command[], int commandLength)
-{
-  // if (receiveMsg(serial).size() != 0)
-  // {
-  Serial.println("1");
-  for (int i = 0; i < commandLength; i++)
-  {
-    Serial.println(i);
-    if (serial.availableForWrite())
-    {
-      serial.write(command[i]);
-    }
-  }
-  Serial.println("3");
-  // }
-}
-
 // keyboard part
 vector<int> setpassword = {6, 0, 6, 0};                                 // set your password here !!!
 vector<int> pswd;                                                       // initialize a password vector(array) to store the key user press
@@ -244,30 +215,35 @@ void setup()
 }
 void loop()
 {
-  // 0.5ms finish this for loop
-  // for (int i = 0; i < 6; i++)
-  // {
-  //   SERfr1002.write(get_status[i]);
-  //
-  if (SERfr1002.availableForWrite())
-  {
-    writeMsg(SERfr1002, get_status, 6);
-  }
-  if (SERfr1002.availableForWrite())
-  {
-    writeMsg(SERfr1002, set_standby, 6);
-  }
+  // 0.5ms finish write for loop
 
-  // 0.7ms finish to receive
-  vector<uint16_t> recData = {};
-  if (SERfr1002.available())
+  delay(500);                          // wait fr1002 to initial
+  if (STATE != "sendRecg_waitRespons") // add lidar dsitance condition
   {
-    recData = receiveMsg(SERfr1002, get_status, 9);
-    for (int s = 0; s < 9; s++)
+    if (SERfr1002.availableForWrite())
     {
-      Serial.println(recData[s]);
+      for (int i = 0; i < 8; i++)
+      {
+        SERfr1002.write(go_recognization[i]);
+        STATE = "sendRecg_waitRespons";
+      }
     }
+    // face match: 0xEF 0xAA 0x00 0x00 0x26 0x12 0x00 (36bytes) 0x23
+    //             EF AA 00 00 26 12 00 00 01 73 61 78 00 00
+    // face fail: 0xEF 0xAA 0x00 0x00 0x26 0x12 0x0D (36bytes) 0x23
+    delay(1000);
+    vector<uint16_t>
+        DATA = {};
+    uint16_t dat;
+    for (int d = 0; d < 44; d++)
+    {
+      dat = SERfr1002.read();
+      Serial.printf("%x ", dat);
+      DATA.push_back(dat);
+    }
+    Serial.println();
   }
+  // 0.7ms finish to receive
 
   delay(10000);
 
