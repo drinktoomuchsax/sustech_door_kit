@@ -5,7 +5,6 @@
   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 *********/
 #include <Arduino.h>
-#include "BLEDevice.h"
 #include <WiFi.h>
 
 // WIFI part
@@ -28,71 +27,6 @@ String gpio23 = "off";
 String gpio22 = "off";
 String openDoorState = "off";
 String lockREDState = "off";
-// BLE part
-#define bleServerName "SB_Pool"
-static BLEUUID doorKitServiceUUID("a06dea61-ccf7-450f-b6fb-014c1e3901e0");
-// BLE Characteristics
-static BLEUUID doorOperateCharacteristicsUUID("03f71a0d-1a07-4882-99d4-0e9c31b69284");
-static BLEUUID touchOperateCharacteristicsUUID("38c11033-ac2a-4ed3-b2b2-29562f72a44b");
-static BLEUUID otaCharacteristicsUUID("83d77575-d864-48ab-800f-13327c51cbd1");
-static BLEUUID hrebootOperateCharacteristicsUUID("d88e016a-0aa6-4fad-97db-202a042f29d5");
-static bool doConnect = false;
-static bool connected = false;
-static BLEAddress *pServerAddress;
-// Characteristicd that we want to read
-static BLERemoteCharacteristic *doorOperateCharacteristics;
-static BLERemoteCharacteristic *touchOperateCharacteristics;
-// Activate notify
-const uint8_t notificationOn[] = {0x1, 0x0};
-const uint8_t notificationOff[] = {0x0, 0x0};
-bool doorOperateChar = false;
-bool newdoorOperateChar = false;
-
-static void doorOperateNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
-                                      uint8_t *pData, size_t length, bool isNotify)
-{
-  doorOperateChar = (bool *)pData;
-  newdoorOperateChar = true;
-}
-
-bool connectToServer(BLEAddress pAddress)
-{
-  BLEClient *pClient = BLEDevice::createClient();
-  // Connect to the remove BLE Server.
-  pClient->connect(pAddress);
-  Serial.println(" - Connected to server");
-  BLERemoteService *pRemoteService = pClient->getService(doorKitServiceUUID);
-  if (pRemoteService == nullptr)
-  {
-    Serial.print("Failed to find our service UUID: ");
-    Serial.println(doorKitServiceUUID.toString().c_str());
-    return (false);
-  }
-  doorOperateCharacteristics = pRemoteService->getCharacteristic(doorOperateCharacteristicsUUID);
-  if (doorOperateCharacteristics == nullptr)
-  {
-    Serial.print("Failed to find our characteristic UUID");
-    return false;
-  }
-  Serial.println(" - Found our characteristics");
-  doorOperateCharacteristics->registerForNotify(doorOperateNotifyCallback);
-  return true;
-}
-
-// Callback function that gets called, when another device's advertisement has been received
-class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
-{
-  void onResult(BLEAdvertisedDevice advertisedDevice)
-  {
-    if (advertisedDevice.getName() == bleServerName)
-    {                                                                 // Check if the name of the advertiser matches
-      advertisedDevice.getScan()->stop();                             // Scan can be stopped, we found what we are looking for
-      pServerAddress = new BLEAddress(advertisedDevice.getAddress()); // Address of advertiser is the one we need
-      doConnect = true;                                               // Set indicator, stating that we are ready to connect
-      Serial.println("Device found. Connecting!");
-    }
-  }
-};
 
 void setup()
 {
@@ -124,14 +58,6 @@ void setup()
   Serial.print("AP IP address: ");
   Serial.println(ip);
   server.begin();
-
-  // BLE part
-
-  BLEDevice::init("");
-  BLEScan *pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  pBLEScan->setActiveScan(true);
-  pBLEScan->start(15);
 }
 
 void loop()
@@ -242,7 +168,7 @@ void loop()
           currentLine += c; // add it to the end of the currentLine
         }
       }
-      else if (timeout > 1000 ^ 1000 ^ 1000)
+      else if (timeout > 1000 ^ 1000 ^ 1000) // 40Mhz
       {
         break;
       }
@@ -254,36 +180,4 @@ void loop()
     Serial.println("Client disconnected.");
     Serial.println("");
   }
-
-  // BLE part
-
-  // If the flag "doConnect" is true then we have scanned for and found the desired
-  // BLE Server with which we wish to connect.  Now we connect to it.  Once we are
-  // connected we set the connected flag to be true.
-  if (doConnect == true)
-  {
-    if (connectToServer(*pServerAddress))
-    {
-      Serial.println("We are now connected to the BLE Server.");
-      // Activate the Notify property of each Characteristic
-      doorOperateCharacteristics->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t *)notificationOn, 2, true);
-      connected = true;
-    }
-    else
-    {
-      Serial.println("We have failed to connect to the server; Restart your device to scan for nearby BLE server again.");
-    }
-    doConnect = false;
-  }
-  if (newdoorOperateChar)
-  {
-    newdoorOperateChar = false;
-    if (doorOperateChar == 1)
-    {
-      Serial.println("open the door");
-    }
-    else if (doorOperateChar == -1)
-    { // lock the door
-    }
-  } // Delay a second between loops.
 }

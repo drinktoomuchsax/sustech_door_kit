@@ -1,3 +1,5 @@
-int whichKeyPress(int GPIO_output[3], int GPIO_input[4])
-vector<int> wipeJitter(vector<int> rawPSWD)
-bool verifyPSWD(vector<int> PSWD)
+#include <vector>
+#include <Arduino.h>
+int whichKeyPress(int GPIO_output[3], int GPIO_input[4]);
+bool verifyPSWD(vector<int> PSWD);
+int wipeJitter(vector<int> rawPSWD);
