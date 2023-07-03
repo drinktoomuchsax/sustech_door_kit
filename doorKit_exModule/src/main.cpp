@@ -1,4 +1,3 @@
-// part of the BLE code comes from Rui Santos' instructions at https://RandomNerdTutorials.com/esp32-ble-server-client/
 #include <Arduino.h>
 // keyboard part
 #include <vector>
@@ -14,10 +13,9 @@ String STATE = "undifeined";
 HardwareSerial SERfr1002(2); // rename Serial2 into SERfr1002 (stand for serial for fr1002)
 
 // keyboard part
-// vector<int> setpassword = {6, 0, 6, 0};                                 // set your password here !!!
-vector<int> pswd;     // initialize a password vector(array) to store the key user press
-vector<int> realpswd; // realpswd
-// int keyboardMap[4][3] = {{7, 8, 9}, {4, 5, 6}, {1, 2, 3}, {-6, 0, -9}}; // keyboardMap[i][j], it depend on you
+// vector<int> setpassword = {6, 0, 6, 0};       // set your password in keyboardMatrix lib !!!
+vector<int> pswd;                       // initialize a password vector(array) to store the key user press
+vector<int> realpswd;                   // realpswd
 int keyboardOutput[3] = {21, 22, 23};   // defining gpio output pin
 int keyboardInput[4] = {33, 32, 35, 4}; // defining gpio input pin
 

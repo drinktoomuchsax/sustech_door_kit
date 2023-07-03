@@ -7,6 +7,10 @@
 #include <Arduino.h>
 #include <WiFi.h>
 
+// two key
+const int lockRedInput = 13;
+const int openDoorInput = 12;
+
 // WIFI part
 const char *ssid = "1106-SBPool-Door";
 const char *password = "01234567";
@@ -43,8 +47,10 @@ void setup()
   digitalWrite(nothingBUTgreen, LOW);
   digitalWrite(openDoor, LOW);
 
-  // WIFI part
+  pinMode(lockRedInput, INPUT);
+  pinMode(openDoorInput, INPUT);
 
+  // WIFI part
   Serial.print("Setting AP (Access Point)…");
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid, password); // launch the access point
@@ -62,6 +68,31 @@ void setup()
 
 void loop()
 {
+
+  // press upper key set door open(clear other state), press lower key set door lock(clear other state), press both clear all
+  if ((digitalRead(openDoorInput) == 1) && (digitalRead(lockRedInput) != 1))
+  {
+    digitalWrite(openDoor, HIGH);
+    digitalWrite(lockBLUE, LOW);
+    digitalWrite(lockRED, LOW);
+    digitalWrite(nothingBUTgreen, LOW);
+  }
+  else if ((digitalRead(openDoorInput) != 1) && (digitalRead(lockRedInput) == 1))
+  {
+    digitalWrite(openDoor, LOW);
+    digitalWrite(lockBLUE, LOW);
+    digitalWrite(lockRED, HIGH);
+    digitalWrite(nothingBUTgreen, LOW);
+  }
+  else if ((digitalRead(openDoorInput) == 1) && (digitalRead(lockRedInput) == 1))
+  {
+    digitalWrite(openDoor, LOW);
+    digitalWrite(lockBLUE, LOW);
+    digitalWrite(lockRED, LOW);
+    digitalWrite(nothingBUTgreen, LOW);
+    delay(2000);
+  }
+
   // WIFI part copy from https://randomnerdtutorials.com/esp32-web-server-arduino-ide/,if you want to know how these code works, learn details there.
   WiFiClient client = server.available(); // Listen for incoming clients
   if (client)
@@ -89,25 +120,25 @@ void loop()
             client.println();
 
             // turns the GPIOs on and off
-            if (header.indexOf("GET /26/on") >= 0)
+            if (header.indexOf("GET /openDoorState/on") >= 0)
             {
               Serial.println("GPIO 26 on");
               openDoorState = "on";
               digitalWrite(openDoor, HIGH);
             }
-            else if (header.indexOf("GET /26/off") >= 0)
+            else if (header.indexOf("GET /openDoorState/off") >= 0)
             {
               Serial.println("GPIO 26 off");
               openDoorState = "off";
               digitalWrite(openDoor, LOW);
             }
-            else if (header.indexOf("GET /27/on") >= 0)
+            else if (header.indexOf("GET /lockREDState/on") >= 0)
             {
               Serial.println("GPIO 27 on");
               lockREDState = "on";
               digitalWrite(lockRED, HIGH);
             }
-            else if (header.indexOf("GET /27/off") >= 0)
+            else if (header.indexOf("GET /lockREDState/off") >= 0)
             {
               Serial.println("GPIO 27 off");
               lockREDState = "off";
@@ -121,8 +152,10 @@ void loop()
             // CSS to style the on/off buttons
             // Feel free to change the background-color and font-size attributes to fit your preferences
             client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
-            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
+            client.println(".button { display: inline-block; padding: 15px 25px; font-size: 24px; cursor: pointer; text-align: center; text-decoration: none; outline: none;");
+            client.println("color: #fff; background-color: #4CAF50; border: none; border-radius: 15px; box-shadow: 0 9px #999;}");
+            client.println("button:hover { background-color: #3e8e41 }");
+            client.println("button:active { background-color: #3e8e41; box-shadow: 0 5px #666; transform: translateY(4px); }");
             client.println(".button2 {background-color: #555555;}</style></head>");
 
             // Web Page Heading
@@ -133,11 +166,11 @@ void loop()
             // If the openDoorState is off, it displays the ON button
             if (openDoorState == "off")
             {
-              client.println("<p><a href=\"/26/on\"><button class=\"button\">ON</button></a></p>");
+              client.println("<p><a href=\"/openDoorState/on\"><button class=\"button\">ON</button></a></p>");
             }
             else
             {
-              client.println("<p><a href=\"/26/off\"><button class=\"button button2\">OFF</button></a></p>");
+              client.println("<p><a href=\"/openDoorState/off\"><button class=\"button button2\">OFF</button></a></p>");
             }
 
             // Display current state, and ON/OFF buttons for GPIO 27
@@ -145,11 +178,11 @@ void loop()
             // If the lockREDState is off, it displays the ON button
             if (lockREDState == "off")
             {
-              client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
+              client.println("<p><a href=\"/lockREDState/on\"><button class=\"button\">ON</button></a></p>");
             }
             else
             {
-              client.println("<p><a href=\"/27/off\"><button class=\"button button2\">OFF</button></a></p>");
+              client.println("<p><a href=\"/lockREDState/off\"><button class=\"button button2\">OFF</button></a></p>");
             }
             client.println("</body></html>");
 
