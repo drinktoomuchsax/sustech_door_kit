@@ -32,6 +32,20 @@ String gpio22 = "off";
 String openDoorState = "off";
 String lockREDState = "off";
 
+/**
+ * @brief
+ *
+ */
+
+void setHigh(int whichPin)
+{
+  digitalWrite(lockBLUE, LOW);
+  digitalWrite(lockRED, LOW);
+  digitalWrite(nothingBUTgreen, LOW);
+  digitalWrite(openDoor, LOW);
+  digitalWrite(whichPin, HIGH);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -72,17 +86,45 @@ void loop()
   // press upper key set door open(clear other state), press lower key set door lock(clear other state), press both clear all
   if ((digitalRead(openDoorInput) == 1) && (digitalRead(lockRedInput) != 1))
   {
-    digitalWrite(openDoor, HIGH);
-    digitalWrite(lockBLUE, LOW);
-    digitalWrite(lockRED, LOW);
-    digitalWrite(nothingBUTgreen, LOW);
+    if (openDoorState == "on")
+    {
+      digitalWrite(lockBLUE, LOW);
+      digitalWrite(lockRED, LOW);
+      digitalWrite(nothingBUTgreen, LOW);
+      digitalWrite(openDoor, LOW);
+      openDoorState = "off";
+      delay(500);
+    }
+    else if (openDoorState == "off")
+    {
+      digitalWrite(lockBLUE, LOW);
+      digitalWrite(lockRED, LOW);
+      digitalWrite(nothingBUTgreen, LOW);
+      digitalWrite(openDoor, HIGH);
+      openDoorState = "on";
+      delay(500);
+    }
   }
   else if ((digitalRead(openDoorInput) != 1) && (digitalRead(lockRedInput) == 1))
   {
-    digitalWrite(openDoor, LOW);
-    digitalWrite(lockBLUE, LOW);
-    digitalWrite(lockRED, HIGH);
-    digitalWrite(nothingBUTgreen, LOW);
+    if (lockREDState == "on")
+    {
+      digitalWrite(lockBLUE, LOW);
+      digitalWrite(lockRED, LOW);
+      digitalWrite(nothingBUTgreen, LOW);
+      digitalWrite(openDoor, LOW);
+      lockREDState = "off";
+      delay(500);
+    }
+    else if (lockREDState == "off")
+    {
+      digitalWrite(lockBLUE, LOW);
+      digitalWrite(lockRED, HIGH);
+      digitalWrite(nothingBUTgreen, LOW);
+      digitalWrite(openDoor, LOW);
+      lockREDState = "on";
+      delay(500);
+    }
   }
   else if ((digitalRead(openDoorInput) == 1) && (digitalRead(lockRedInput) == 1))
   {
