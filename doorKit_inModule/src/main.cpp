@@ -12,7 +12,7 @@ const int lockRedInput = 13;
 const int openDoorInput = 12;
 
 // WIFI part
-const char *ssid = "1106-SBPool-Door";
+const char *ssid = "1106-SBPool-Door_1";
 const char *password = "01234567";
 
 WiFiServer server(80);
@@ -25,7 +25,7 @@ String header;
 // 19 open
 const int lockBLUE = 23;
 const int nothingBUTgreen = 22;
-const int lockRED = 21;
+const int lockRED = 25;
 const int openDoor = 19;
 String gpio23 = "off";
 String gpio22 = "off";
@@ -49,8 +49,8 @@ void setHigh(int whichPin)
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Starting Arduino BLE Client application...");
 
+  Serial.print(" AP (Access Point)…");
   // set gpio pin
   pinMode(lockBLUE, OUTPUT);
   pinMode(lockRED, OUTPUT);
