@@ -34,8 +34,8 @@ _This page is not available in [English](README.en.md) yet._
 - [功能](#功能)
 - [原理](#原理)
 - [复刻](#复刻)
-  - [物料清单](#物料清单)
-  - [所需工具](#所需工具)
+  - [:money\_with\_wings:物料清单（全功能-预算敏感版本）](#money_with_wings物料清单全功能-预算敏感版本)
+  - [:wrench:所需工具](#wrench所需工具)
   - [门外模块（exModule）](#门外模块exmodule)
   - [门内模块（inModule）](#门内模块inmodule)
   - [门的部分](#门的部分)
@@ -56,10 +56,50 @@ _This page is not available in [English](README.en.md) yet._
 
 # 复刻
 本项目在开始之初的设计目标之一就是尽可能低的复刻门槛，所以使用的都是现成的市售模块。虽然牺牲了一些集成度和成本，但是你不需要经历繁复地采购和焊接贴片元件，只需少许简单焊接和组装就能复刻本项目。
-复刻讲解如何复刻本项目，如果对某一步的详细程度感到不满意或有任何疑惑，欢迎提交issue。
+如果对某一步的详细程度感到不满意或有任何疑惑，欢迎提交issue。
 
-## 物料清单
-## 所需工具
+## :money_with_wings:物料清单（全功能-预算敏感版本）
+> 第一步，下面全部买回来
+
+| n       | 名称                      | 数量 | 款式                                             | 总价         | 链接                                                                                                                                         | 备注                                                                                                                                                             |
+| ------- | ------------------------- | ---- | ------------------------------------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0       | luat esp32-s3开发板       | 1片  | ESP32S3开发板                                    | ￥29.9        | [淘宝合宙旗舰店](https://item.taobao.com/item.htm?spm=a1z09.2.0.0.67002e8dnQlfYj&id=696836421009&_u=53t2jj8gb611)                            | 可以换其他家，但是记得修改pcb封装尺寸和代码引脚定义                                                                                                              |
+| 1       | luat esp32-c3开发板       | 1片  | 经典款ESP32C3开发板                              | ￥12.9        | [淘宝合宙旗舰店](https://item.taobao.com/item.htm?spm=a1z09.2.0.0.67002e8dnQlfYj&id=666579064570&_u=53t2jj8g0ed4)                            | 同上                                                                                                                                                             |
+| 2       | 人脸识别模块HLK-FR1002    | 1个  | 【LD2420单模块】24G雷达模块（人体移动微动感应）  | ￥72.5        | [淘宝海凌科旗舰店](https://detail.tmall.com/item.htm?_u=53t2jj8g16d6&id=693925937468&skuId=4929017661289&spm=a1z09.2.0.0.67002e8dnQlfYj)     |                                                                                                                                                                  |
+| 3       | 雷达模块HLK-LD2420        | 1个  | 【强力推荐】测试套件B: FR1002单模块+端子连接线*1 | ￥9.9         | [淘宝海凌科旗舰店](https://detail.tmall.com/item.htm?_u=53t2jj8g7db2&id=703242126067&skuId=4954211957536&spm=a1z09.2.0.0.38472e8dTHnsiW)     |                                                                                                                                                                  |
+| 4       | 内模块pcb打板             | 1片  | 略                                               | ￥20          | [Gerber文件](pcbDesign/imModule/inModule_Gerber.zip)                                                                                         | 嘉立创价格，可以换其他家，洞洞板手焊（￥2.5），立创eda抄板白嫖（￥0）                                                                                              |
+| 5       | 外模块pcb打板             | 1片  | 略                                               | ￥40左右      | [Gerber文件](pcbDesign/exMoudle/sustech_door_kit-exModule-Gerber.zip)                                                                        | 同上，但是需要两片，一片用作焊接，一篇用作背板安装                                                                                                               |
+| 6       | 继电器                    | 1个  | 4路5v红板                                        | ￥12          | [淘宝优信电子](https://item.taobao.com/item.htm?spm=a1z09.2.0.0.67002e8dnQlfYj&id=549692985984&_u=53t2jj8gef8e)                              | 要买5v的，不然不能开发板直接触发                                                                                                                                 |
+| 7       | :keyboard:轴体            | 14个 | cherryMX的封装就能够焊上，具体轴体按需选择       | ￥10          | [淘宝不知名店铺](https://item.taobao.com/item.htm?spm=a1z09.2.0.0.67002e8dnQlfYj&id=626986550029&_u=53t2jj8g20a3)                            |                                                                                                                                                                  |
+| 8       | :keyboard:键帽            | 12个 | 标准的十字孔能插上轴体就行                       | ￥6.3         | [桃堡~或者去网吧悄悄扣走windows键~](https://item.taobao.com/item.htm?spm=a21n57.1.0.0.33f6523cuvqG1C&id=704738471960&ns=1&abbucket=0#detail) | 有实力可以加钱上点好的                                                                                                                                           |
+| 9       | :nut_and_bolt:M3x25螺丝   | 5个  | 直径3mm，长度25mm，0.5螺距                       | ￥0.3         | [1688](https://detail.1688.com/offer/572533111204.html?spm=a2615.2177701.autotrace-smt_offerGeneral.6.20a22b78zPF4M8)                        | 其实3个就够了，剩下2个惩罚不仔细看备注的强迫症                                                                                                                   |
+| 10      | :nut_and_bolt:M3x？？螺丝 | 4个  | 长度？？mm，其余同上                             | ￥5.2         | [1688](https://detail.1688.com/offer/572533111204.html?spm=a2615.2177701.autotrace-smt_offerGeneral.6.20a22b78zPF4M8)                        | 算上邮费                                                                                                                                                         |
+| 11      | :nut_and_bolt:M3螺母      | 4个  | 直径M3，六角对边长5.5mm，螺距0.5mm，2.4mm厚      | ￥0.2         | [1688](https://detail.1688.com/offer/572533111204.html?spm=a2615.2177701.autotrace-smt_offerGeneral.6.20a22b78zPF4M8)                        | 邮费算在上面了                                                                                                                                                   |
+| 12      | :nut_and_bolt:M3防松螺母  | 3个  | 长度？？mm，其余同上                             | ￥0.2         | [1688](https://detail.1688.com/offer/572533111204.html?spm=a2615.2177701.autotrace-smt_offerGeneral.6.20a22b78zPF4M8)                        | 用来分隔继电器和内模块，邮费算在上面了                                                                                                                           |
+| 13      | :electric_plug:硅胶线     | 4条  | 统一1m，18AWG；红色、黑色、黄色、白色            | ￥6           | [桃堡](https://item.taobao.com/item.htm?spm=a1z09.2.0.0.67002e8dnQlfYj&id=654286714565&_u=53t2jj8g48c8)                                      | 邮费算在上面了                                                                                                                                                   |
+| 14      | :electric_plug:CtoC数据线 | 1条  | 1m左右就好                                       | ￥6           | [桃堡](https://detail.tmall.com/item.htm?abbucket=0&id=662435210626&ns=1&spm=a21n57.1.0.0.42b9523caGo622&skuId=4772418768729)                | 如果你经常有连接开发板的需求，推荐合宙的[10条各种版本打包](https://item.taobao.com/item.htm?spm=a1z10.5-c-s.w4002-24045920841.24.230e5aa3n5OKyx&id=706207670841) |
+| 15      | DC-DC模块                 | 1个  | 链接里就一个，买他就好                           | ￥5.7         | [桃堡](https://item.taobao.com/item.htm?spm=a1z09.2.0.0.35b32e8dcWQ58H&id=536347025767&_u=53t2jj8g6082)                                      |                                                                                                                                                                  |
+| **666** | **总计**                  |      |                                                  | **￥240左右** |
+
+### 物料清单（删减功能-预算敏感版本）
+如果这超过了你的预算，可以通过删减功能来减少部件，比如可以删减掉人脸识别功能，避免购买HLK-FR1002和HLK-LD2420将价格减到**153元**。
+或者可以eda抄板，节省打板价格。**注意，外模块尺寸为5*13cm，不在立创优惠劵的尺寸范围内，可以试着删减掉人脸识别后将尺寸缩小。**
+花上几个小时抄板，砍掉一些功能理论最低预算为**86元**。
+
+
+## :wrench:所需工具
+> 如果只是为了复刻项目，下面这些工具不用全部买回来，想办法借到比较合理。但这是个社恐友好的项目，所以放上一些参考购买链接。
+
+| 名称       | 用途     | 参考购买链接                                                                                                                                                                   |
+| ---------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 剥线钳     | 剥线     | [【简装】7寸单色手柄剥线钳](https://detail.tmall.com/item.htm?abbucket=0&id=43540267171&ns=1&spm=a21n57.1.0.0.1f6d523cvhBHgo)                                                  |
+| 烙铁       | 焊接     | [标配+C2C数据线+转接板+氮化镓充电器+K65小刀头+BC2尖头 ](https://detail.tmall.com/item.htm?abbucket=0&id=662514528915&ns=1&skuId=4952079646578&spm=a21n57.1.0.0.1f6d523cvhBHgo) |
+| 焊锡       | 焊接     | [含锡40%线径0.8mm-50克](https://detail.tmall.com/item.htm?abbucket=0&id=595763429832&ns=1&skuId=4138975609871&spm=a21n57.1.0.0.1f6d523cvhBHgo)                                 |
+| 十字螺丝刀 | 打螺丝   | [5*75十字【专业款】](https://item.taobao.com/item.htm?spm=a21n57.1.0.0.33f6523cuvqG1C&id=709830788462&ns=1&abbucket=0#detail)                                                  |
+| 扳手       | 打螺母   | [【中小型】活扳手/管钳双功能两用8寸-200mm](https://detail.tmall.com/item.htm?abbucket=0&id=655191633412&ns=1&spm=a21n57.1.0.0.33f6523cuvqG1C&skuId=4992109567932)              |
+| 胶布       | 防止短接 | 是个胶布就行                                                                                                                                                                   |
+
+
 ## 门外模块（exModule）
 ### 1.焊接
 ### 2.开发板刷入程序
