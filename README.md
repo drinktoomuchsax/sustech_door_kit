@@ -19,7 +19,7 @@ _This page is not available in [English](README.en.md) yet._
 
 [![Repo Size](https://img.shields.io/github/repo-size/drinktoomuchsax/sustech_door_kit)](https://github.com/drinktoomuchsax/sustech_door_kit)         [![GitHub license](https://img.shields.io/github/license/drinktoomuchsax/sustech_door_kit)](https://github.com/drinktoomuchsax/sustech_door_kit/blob/main/LICENSE)       [![GitHub contributors](https://img.shields.io/github/contributors/drinktoomuchsax/sustech_door_kit)](https://github.com/drinktoomuchsax/sustech_door_kit/graphs/contributors/)                                   [![GitHub stars](https://img.shields.io/github/stars/drinktoomuchsax/sustech_door_kit?style=social)](https://github.com/drinktoomuchsax/sustech_door_kit/stargazers/)
 
-:unlock:这个项目使用两片ESP32开发板以及一系列模块，实现了不使用校园卡打开宿舍门的功能
+:unlock:这个项目使用两片ESP32开发板以及一系列模块，将宿舍开门体验提到了新高度
 
 :star:欢迎Star
 
