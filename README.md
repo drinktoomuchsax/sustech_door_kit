@@ -172,9 +172,12 @@ _This page is not available in [English](README.en.md) yet._
 ![cables](docMarterial/1688570555298.jpg)
 
 ### 4.走线
-> **把线首先穿过外门把手上面的小框，然后穿过门上的洞，这样外门把手就不会因为线的存在而不能贴合门体**
+> **把线首先穿过外门把手上面的小框**
 
 ![cables](docMarterial/1688570555290.jpg)
+
+> **然后穿过门上的洞，这样外门把手就不会因为线的存在而不能贴合门体**
+
 ![cables](docMarterial/1688570555312.jpg)
 ![cables](docMarterial/1688570555294.jpg)
 
