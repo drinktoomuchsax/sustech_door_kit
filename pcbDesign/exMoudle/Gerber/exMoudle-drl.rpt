@@ -1,5 +1,5 @@
 Drill report for exMoudle.kicad_pcb
-Created on 2023/7/5 20:45:52
+Created on 2023/7/6 9:20:00
 
 Copper Layer Stackup:
     =============================================================
@@ -10,7 +10,7 @@ Copper Layer Stackup:
 Drill file 'exMoudle-PTH.drl' contains
     plated through holes:
     =============================================================
-    T1  0.400mm  0.0157"  (6 holes)
+    T1  0.400mm  0.0157"  (7 holes)
     T2  0.800mm  0.0315"  (8 holes)
     T3  1.000mm  0.0394"  (41 holes)
     T4  1.500mm  0.0591"  (24 holes)
@@ -19,7 +19,7 @@ Drill file 'exMoudle-PTH.drl' contains
     T7  3.500mm  0.1378"  (2 holes)
     T8  8.000mm  0.3150"  (1 hole)
 
-    Total plated holes count 87
+    Total plated holes count 88
 
 
 Drill file 'exMoudle-NPTH.drl' contains
