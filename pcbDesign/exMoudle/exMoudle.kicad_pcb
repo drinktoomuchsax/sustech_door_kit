@@ -73,7 +73,7 @@
       (dashed_line_gap_ratio 3.000000)
       (svgprecision 4)
       (plotframeref false)
-      (viasonmask false)
+      (viasonmask true)
       (mode 1)
       (useauxorigin true)
       (hpglpennumber 1)
