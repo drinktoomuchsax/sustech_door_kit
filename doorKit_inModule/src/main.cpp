@@ -43,6 +43,62 @@ void setHigh(int whichPin)
   digitalWrite(whichPin, HIGH);
 }
 
+void switchBetweenOpen(bool DELAY)
+{
+  if (openDoorState == "on")
+  {
+    digitalWrite(lockRED, LOW);
+    digitalWrite(openDoor, LOW);
+    openDoorState = "off";
+    lockREDState = "off";
+    Serial.println("open off");
+    if (DELAY)
+    {
+      delay(500);
+    }
+  }
+  else if (openDoorState == "off")
+  {
+    digitalWrite(lockRED, LOW);
+    digitalWrite(openDoor, HIGH);
+    openDoorState = "on";
+    lockREDState = "off";
+    Serial.println("open on");
+    if (DELAY)
+    {
+      delay(500);
+    }
+  }
+}
+
+void switchBetweenLock(bool DELAY)
+{
+  if (lockREDState == "on")
+  {
+    digitalWrite(lockRED, LOW);
+    digitalWrite(openDoor, LOW);
+    Serial.println("lock off");
+    lockREDState = "off";
+    openDoorState = "off";
+    if (DELAY)
+    {
+      delay(500);
+    }
+  }
+  else if (lockREDState == "off")
+  {
+    digitalWrite(lockRED, HIGH);
+    digitalWrite(openDoor, LOW);
+    Serial.println("lock on");
+    lockREDState = "on";
+    openDoorState = "off";
+    if (DELAY)
+    {
+      delay(500);
+    }
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -78,69 +134,37 @@ void setup()
 
 void loop()
 {
-  if (Serial.available()) // check incoming on default serial (USB) from PC
+  /*| comman | meaning       |
+    | ------ | ------------- |
+    | 0x11   | open the door |
+    | 0xcc   | lock the door |*/
+  if (Serial.available())
   {
     if (Serial.read() == 0x11)
     {
-      digitalWrite(lockRED, LOW);
-      digitalWrite(openDoor, HIGH);
+      switchBetweenOpen(false);
     }
-    else if (Serial.read() == 0x11)
+    else if (Serial.read() == 0xcc)
     {
-      digitalWrite(lockRED, HIGH);
-      digitalWrite(openDoor, LOW);
+      switchBetweenLock(false);
     }
   }
 
   // press upper key set door open(clear other state), press lower key set door lock(clear other state), press both clear all
   if ((digitalRead(openDoorInput) == 1) && (digitalRead(lockRedInput) != 1))
   {
-    if (openDoorState == "on")
-    {
-      digitalWrite(lockRED, LOW);
-      digitalWrite(openDoor, LOW);
-      openDoorState = "off";
-      Serial.println("open off");
-      delay(500);
-      lockREDState == "off";
-    }
-    else if (openDoorState == "off")
-    {
-      digitalWrite(lockRED, LOW);
-      digitalWrite(openDoor, HIGH);
-      openDoorState = "on";
-      Serial.println("open on");
-      delay(500);
-      lockREDState == "off";
-    }
+    switchBetweenOpen(true);
   }
   else if ((digitalRead(openDoorInput) != 1) && (digitalRead(lockRedInput) == 1))
   {
-    if (lockREDState == "on")
-    {
-      digitalWrite(lockRED, LOW);
-      digitalWrite(openDoor, LOW);
-      Serial.println("lock off");
-      lockREDState = "off";
-      delay(400);
-      openDoorState = "off";
-    }
-    else if (lockREDState == "off")
-    {
-      digitalWrite(lockRED, HIGH);
-      digitalWrite(openDoor, LOW);
-      Serial.println("lock on");
-      lockREDState = "on";
-      delay(400);
-      openDoorState = "off";
-    }
+    switchBetweenLock(true);
   }
   else if ((digitalRead(openDoorInput) == 1) && (digitalRead(lockRedInput) == 1))
   {
     digitalWrite(openDoor, LOW);
     digitalWrite(lockRED, LOW);
     openDoorState = "off";
-    lockREDState == "off";
+    lockREDState = "off";
     delay(2000);
   }
 
@@ -156,16 +180,14 @@ void loop()
 
   if (lockREDState == "on")
   {
-    pinMode(lockRedInput, OUTPUT);
-    digitalWrite(lockRedInput, HIGH);
+    digitalWrite(ledGreen, HIGH);
     delay(80);
-    digitalWrite(lockRedInput, LOW);
-    pinMode(lockRedInput, INPUT);
+    digitalWrite(ledGreen, LOW);
     delay(80);
   }
-  else if (lockREDState == "off")
+  else
   {
-    pinMode(lockRedInput, INPUT);
+    digitalWrite(ledGreen, LOW);
   }
 
   // WIFI part copy from https://randomnerdtutorials.com/esp32-web-server-arduino-ide/,if you want to know how these code works, learn details there.
