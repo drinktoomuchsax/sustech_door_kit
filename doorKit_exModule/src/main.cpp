@@ -14,10 +14,14 @@ HardwareSerial SERfr1002(2); // rename Serial2 into SERfr1002 (stand for serial 
 
 // keyboard part
 // vector<int> setpassword = {6, 0, 6, 0};       // set your password in keyboardMatrix lib !!!
-vector<int> pswd;                       // initialize a password vector(array) to store the key user press
-vector<int> realpswd;                   // realpswd
-int keyboardOutput[3] = {21, 22, 23};   // defining gpio output pin
-int keyboardInput[4] = {33, 32, 35, 4}; // defining gpio input pin
+vector<int> pswd;                  // initialize a password vector(array) to store the key user press
+vector<int> realpswd;              // realpswd
+int keyboardOutput[3] = {3, 4, 5}; // defining gpio output pin
+#define key0 9
+#define key1 12
+#define key2 13
+#define key3 8
+int keyboardInput[4] = {key0, key1, key2, key3}; // defining gpio input pin
 
 // face recognition part
 uint8_t set_standby[6] = {0xEF, 0xAA, 0x23, 0x00, 0x00, 0x23};
@@ -28,7 +32,7 @@ uint8_t get_usernameANDid[6] = {0xEF, 0xAA, 0x24, 0x00, 0x00, 0x24};
 void setup()
 {
   Serial.begin(115200);
-  SERfr1002.begin(115200, SERIAL_8N1, 16, 17); // uart port for hlk-fr1002 face recogniton module with baud rate 115200 bps, 8_data_bit, No_parity, 1_stop_bit
+  // SERfr1002.begin(115200, SERIAL_8N1, 16, 17); // uart port for hlk-fr1002 face recogniton module with baud rate 115200 bps, 8_data_bit, No_parity, 1_stop_bit
 }
 void loop()
 {

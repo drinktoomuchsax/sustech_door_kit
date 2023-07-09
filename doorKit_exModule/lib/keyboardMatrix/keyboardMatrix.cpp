@@ -3,9 +3,7 @@
 using namespace std;
 
 vector<int> setpassword = {6, 0, 6, 0};                                 // set your password here !!!vector<int> realpswd;                                                   // realpswd
-int keyboardMap[4][3] = {{7, 8, 9}, {4, 5, 6}, {1, 2, 3}, {-6, 0, -9}}; // keyboardMap[i][j], it depend on you
-// int keyboardOutput[3] = {21, 22, 23};           // defining gpio output pin
-// int keyboardInput[4] = {33, 32, 35, 4};         // defining gpio input pin
+int keyboardMap[4][3] = {{-6, 2, 6}, {0, 3, 7}, {-9, 4, 8}, {1, 5, 9}}; // keyboardMap[i][j], it depend on pcb design
 /**
  * @brief detect which key been pressed
  * @note keyboard map

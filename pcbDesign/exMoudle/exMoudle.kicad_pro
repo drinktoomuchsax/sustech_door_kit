@@ -478,24 +478,7 @@
       "version": 3
     },
     "net_colors": null,
-    "netclass_assignments": {
-      "Net-(J1-GPIO12)": "key1",
-      "Net-(J1-GPIO13)": "key2",
-      "Net-(J1-GPIO8)": "key3",
-      "Net-(J1-GPIO9)": "key0",
-      "unconnected-(SW1-Pad1)": "key0",
-      "unconnected-(SW10-Pad1)": "key1",
-      "unconnected-(SW11-Pad1)": "key2",
-      "unconnected-(SW12-Pad1)": "key3",
-      "unconnected-(SW2-Pad1)": "key1",
-      "unconnected-(SW3-Pad1)": "key2",
-      "unconnected-(SW4-Pad1)": "key3",
-      "unconnected-(SW5-Pad1)": "key0",
-      "unconnected-(SW6-Pad1)": "key1",
-      "unconnected-(SW7-Pad1)": "key2",
-      "unconnected-(SW8-Pad1)": "key3",
-      "unconnected-(SW9-Pad1)": "key0"
-    },
+    "netclass_assignments": null,
     "netclass_patterns": []
   },
   "pcbnew": {
