@@ -99,7 +99,7 @@ int wipeJitter(vector<int> rawPSWD)
  * @author drinktoomuchsax
  * @version 0.0.3
  */
-bool verifyPSWD(vector<int> PSWD)
+string verifyPSWD(vector<int> PSWD)
 {
     if (PSWD.size() >= 6)
     {
@@ -110,15 +110,38 @@ bool verifyPSWD(vector<int> PSWD)
         four = (setpassword[3] == PSWD[6]);
         if (one && two && three && four) // all four bit is right, the
         {
-            return true;
+            return "TRUE";
         }
         else
         {
-            return false;
+            return "FALSE";
+        }
+    }
+    else if (PSWD.size() == 4)
+    {
+        bool oneTest, twoTest, threeTest, fourTest, oneLock, twoLock, threeLock, fourLock;
+
+        oneTest = (PSWD[0] == 1);
+        twoTest = (PSWD[1] == 1);
+        threeTest = (PSWD[2] == 1);
+        fourTest = (PSWD[3] == 1);
+
+        oneLock = (PSWD[0] == 1);
+        twoLock = (PSWD[1] == 2);
+        threeLock = (PSWD[2] == 3);
+        fourLock = (PSWD[3] == 4);
+        if (oneTest && twoTest && threeTest && fourTest) // all four bit is right, the
+        {
+            return "TEST";
+        }
+        else if (oneLock && twoLock && threeLock && fourLock)
+        {
+            return "LOCK";
         }
     }
     else
     {
-        return false;
+        return "FALSE";
     }
+    return "FALSE";
 }

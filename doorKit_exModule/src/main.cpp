@@ -30,8 +30,41 @@ uint8_t go_recognization[8] = {0xEF, 0xAA, 0x12, 0x00, 0x02, 0x00, 0x0A, 0x1A}; 
 uint8_t get_usernameANDid[6] = {0xEF, 0xAA, 0x24, 0x00, 0x00, 0x24};
 
 // led setup
+bool testState = false;
+bool lockState = false;
+
 const int ledA = 10;
 const int ledB = 11;
+
+void ledBlink(int whichLed, int citcleTime, int delatTime)
+{
+  for (int Z = 0; Z < citcleTime; Z++)
+  {
+    digitalWrite(whichLed, HIGH);
+    delay(delatTime);
+    digitalWrite(whichLed, LOW);
+    delay(delatTime);
+  }
+  if (lockState)
+  {
+    digitalWrite(ledB, HIGH);
+  }
+}
+
+bool switchState(bool state)
+{
+  Serial.println("switchState is here");
+  if (state)
+  {
+    Serial.println("ops false");
+    return false;
+  }
+  else
+  {
+    Serial.println("ops true");
+    return true;
+  }
+}
 
 void setup()
 {
@@ -92,7 +125,11 @@ void loop()
         if (keyBeenPressed != -1)
         {
           realpswd.push_back(keyBeenPressed);
-          // Serial.printf("add to \"%d\" password\n", keyBeenPressed);
+          ledBlink(ledA, 1, 50);
+          if (testState)
+          {
+            Serial.printf("add to \"%d\" password\n", keyBeenPressed);
+          }
         }
         vector<int> clearpswd;
         pswd.swap(clearpswd);
@@ -101,46 +138,61 @@ void loop()
       if (whichKeyPress(keyboardOutput, keyboardInput) == -9)
       {
         // print real pasw
-        // Serial.print("realpswd is: ");
-        // for (int i = 0; i < realpswd.size(); i++)
-        // {
-        //   Serial.printf("_%d", realpswd[i]);
-        // }
-        // Serial.println();
+        if (testState)
+        {
+          Serial.print("realpswd is: ");
+          for (int i = 0; i < realpswd.size(); i++)
+          {
+            Serial.printf("_%d", realpswd[i]);
+          }
+          Serial.println();
+        }
 
         STATE = "verifyPSWD_wipeJitter";
 
-        if (verifyPSWD(realpswd) == 1) // match, open the door
+        if (verifyPSWD(realpswd) == "TRUE") // match, open the door
         {
           Serial.println(2);
-          for (int Z = 0; Z < 5; Z++)
-          {
-            digitalWrite(ledA, HIGH);
-            delay(80);
-            digitalWrite(ledA, LOW);
-            delay(80);
-          }
+          ledBlink(ledA, 5, 80);
           STATE = "standby";
           delay(1000);
         }
-        else if (verifyPSWD(realpswd) == -1) // match, lock/unlock the door
+        else if (verifyPSWD(realpswd) == "LOCK") // match, lock/unlock the door
         {
-          Serial.print("\nsend lock door signal\n");
+          lockState = switchState(lockState);
+
+          if (testState)
+          {
+            if (lockState)
+            {
+              Serial.print("\nsend lock door signal\n");
+            }
+            else
+            {
+              Serial.print("\nsend unlock door signal\n");
+            }
+          }
+
           STATE = "standby";
           delay(1000);
+        }
+        else if (verifyPSWD(realpswd) == "TEST")
+        {
+          testState = switchState(testState);
+          if (testState)
+          {
+            Serial.println("test mode");
+          }
+          else
+          {
+            Serial.println("exit test mode");
+          }
         }
         else // do nothing but red led
         {
           Serial.print("verify wrong\n");
-          for (int Z = 0; Z < 5; Z++)
-          {
-            digitalWrite(ledB, HIGH);
-            delay(80);
-            digitalWrite(ledB, LOW);
-            delay(80);
-          }
+          ledBlink(ledB, 5, 80);
           STATE = "undefined";
-          delay(500);
         };
         realpswd.clear();
       }
