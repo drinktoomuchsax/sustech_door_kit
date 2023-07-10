@@ -13,7 +13,7 @@ String STATE = "undifeined";
 HardwareSerial SERfr1002(2); // rename Serial2 into SERfr1002 (stand for serial for fr1002)
 
 // keyboard part
-// vector<int> setpassword = {6, 0, 6, 0};       // set your password in keyboardMatrix lib !!!
+// vector<int> setpassword = {x, x , x, x};       // set your password in keyboardMatrix lib !!!
 vector<int> pswd;                  // initialize a password vector(array) to store the key user press
 vector<int> realpswd;              // realpswd
 int keyboardOutput[3] = {3, 4, 5}; // defining gpio output pin
@@ -29,10 +29,19 @@ uint8_t get_status[6] = {0xEF, 0xAA, 0x11, 0x00, 0x00, 0x11};
 uint8_t go_recognization[8] = {0xEF, 0xAA, 0x12, 0x00, 0x02, 0x00, 0x0A, 0x1A}; // timeout 10s, parity is 0x1A
 uint8_t get_usernameANDid[6] = {0xEF, 0xAA, 0x24, 0x00, 0x00, 0x24};
 
+// led setup
+const int ledA = 10;
+const int ledB = 11;
+
 void setup()
 {
   Serial.begin(115200);
+
   // SERfr1002.begin(115200, SERIAL_8N1, 16, 17); // uart port for hlk-fr1002 face recogniton module with baud rate 115200 bps, 8_data_bit, No_parity, 1_stop_bit
+
+  // led setup
+  pinMode(ledA, OUTPUT);
+  pinMode(ledB, OUTPUT);
 }
 void loop()
 {
@@ -83,7 +92,7 @@ void loop()
         if (keyBeenPressed != -1)
         {
           realpswd.push_back(keyBeenPressed);
-          Serial.printf("add to \"%d\" password\n", keyBeenPressed);
+          // Serial.printf("add to \"%d\" password\n", keyBeenPressed);
         }
         vector<int> clearpswd;
         pswd.swap(clearpswd);
@@ -91,16 +100,26 @@ void loop()
 
       if (whichKeyPress(keyboardOutput, keyboardInput) == -9)
       {
-        Serial.print("realpswd is\n");
-        for (int i = 0; i < realpswd.size(); i++)
-        {
-          Serial.printf("_%d", realpswd[i]);
-        }
+        // print real pasw
+        // Serial.print("realpswd is: ");
+        // for (int i = 0; i < realpswd.size(); i++)
+        // {
+        //   Serial.printf("_%d", realpswd[i]);
+        // }
+        // Serial.println();
+
         STATE = "verifyPSWD_wipeJitter";
 
         if (verifyPSWD(realpswd) == 1) // match, open the door
         {
-          Serial.print("\nsend open door signal\n");
+          Serial.println(2);
+          for (int Z = 0; Z < 5; Z++)
+          {
+            digitalWrite(ledA, HIGH);
+            delay(80);
+            digitalWrite(ledA, LOW);
+            delay(80);
+          }
           STATE = "standby";
           delay(1000);
         }
@@ -113,6 +132,13 @@ void loop()
         else // do nothing but red led
         {
           Serial.print("verify wrong\n");
+          for (int Z = 0; Z < 5; Z++)
+          {
+            digitalWrite(ledB, HIGH);
+            delay(80);
+            digitalWrite(ledB, LOW);
+            delay(80);
+          }
           STATE = "undefined";
           delay(500);
         };

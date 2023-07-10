@@ -140,11 +140,11 @@ void loop()
     | 0xcc   | lock the door |*/
   if (Serial.available())
   {
-    if (Serial.read() == 1)
+    if (Serial.read() == 0x11)
     {
       switchBetweenOpen(false);
     }
-    else if (Serial.read() == 2)
+    else if (Serial.read() == 0xcc)
     {
       switchBetweenLock(false);
     }

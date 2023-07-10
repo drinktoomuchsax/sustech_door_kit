@@ -2,7 +2,7 @@
 #include <vector>
 using namespace std;
 
-vector<int> setpassword = {6, 0, 6, 0};                                 // set your password here !!!vector<int> realpswd;                                                   // realpswd
+vector<int> setpassword = {6, 6, 0, 1};                                 // set your password here !!!vector<int> realpswd;                                                   // realpswd
 int keyboardMap[4][3] = {{-6, 2, 6}, {0, 3, 7}, {-9, 4, 8}, {1, 5, 9}}; // keyboardMap[i][j], it depend on pcb design
 /**
  * @brief detect which key been pressed
