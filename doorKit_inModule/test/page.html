@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+</html>
+
+<head>
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+    <style>
+        html {
+            font-family: Helvetica;
+            display: inline-block;
+            margin: 0px auto;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 25px;
+            font-size: 24px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 9px #999;
+        }
+
+        .button:hover {
+            background-color: #3e8e41
+        }
+
+        .button:active {
+            background-color: #3e8e41;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+
+        .button2 {
+            background-color: #555555;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>ESP32 Web Server</h1>
+    <p>GPIO 26 - State " + output26State + "</p>
+    <p><a href="/26/on"><button class="button">ON</button></a></p>
+    <p><a href="/27/on"><button class="button">ON</button></a></p>
+</body>
+
+</html>
