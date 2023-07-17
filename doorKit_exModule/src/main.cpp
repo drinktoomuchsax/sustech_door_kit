@@ -1,209 +1,180 @@
 #include <Arduino.h>
-// keyboard part
-#include <vector>
-using namespace std;
-
-#include <keyboardMatrix.h>
-
-// STATE indicate the state of esp32. It could be syandby, verifyPSWD_wipeJitter, undifened and etc
-String STATE = "undifeined";
-// face recognition part
-// #include <fr1002.h>
-
-HardwareSerial SERfr1002(2); // rename Serial2 into SERfr1002 (stand for serial for fr1002)
-
-// keyboard part
-// vector<int> setpassword = {x, x , x, x};       // set your password in keyboardMatrix lib !!!
-vector<int> pswd;                  // initialize a password vector(array) to store the key user press
-vector<int> realpswd;              // realpswd
-int keyboardOutput[3] = {3, 4, 5}; // defining gpio output pin
-#define key0 9
-#define key1 12
-#define key2 13
-#define key3 8
-int keyboardInput[4] = {key0, key1, key2, key3}; // defining gpio input pin
-
-// face recognition part
-uint8_t set_standby[6] = {0xEF, 0xAA, 0x23, 0x00, 0x00, 0x23};
-uint8_t get_status[6] = {0xEF, 0xAA, 0x11, 0x00, 0x00, 0x11};
-uint8_t go_recognization[8] = {0xEF, 0xAA, 0x12, 0x00, 0x02, 0x00, 0x0A, 0x1A}; // timeout 10s, parity is 0x1A
-uint8_t get_usernameANDid[6] = {0xEF, 0xAA, 0x24, 0x00, 0x00, 0x24};
-
-// led setup
-bool testState = false;
-bool lockState = false;
 
 const int ledA = 10;
-const int ledB = 11;
 
-void ledBlink(int whichLed, int citcleTime, int delatTime)
+void ledBlink(int circle)
 {
-  for (int Z = 0; Z < citcleTime; Z++)
+  for (int i = 0; i < circle; i++)
   {
-    digitalWrite(whichLed, HIGH);
-    delay(delatTime);
-    digitalWrite(whichLed, LOW);
-    delay(delatTime);
-  }
-  if (lockState)
-  {
-    digitalWrite(ledB, HIGH);
+    digitalWrite(ledA, HIGH);
+    delay(80);
+    digitalWrite(ledA, LOW);
+    delay(80);
   }
 }
+/*********
+  Rui Santos
+  Complete instructions at https://RandomNerdTutorials.com/esp32-ble-server-client/
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
+  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*********/
 
-bool switchState(bool state)
+#include "BLEDevice.h"
+#include <Wire.h>
+
+// Default Temperature is in Celsius
+// Comment the next line for Temperature in Fahrenheit
+#define temperatureCelsius
+
+// BLE Server name (the other ESP32 name running the server sketch)
+#define bleServerName "BME280_ESP32"
+
+/* UUID's of the service, characteristic that we want to read*/
+// BLE Service
+static BLEUUID bmeServiceUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");
+
+// BLE Characteristics
+static BLEUUID temperatureCharacteristicUUID("cba1d466-344c-4be3-ab3f-189f80dd7518");
+
+// Humidity Characteristic
+static BLEUUID humidityCharacteristicUUID("ca73b3ba-39f6-4ab3-91ae-186dc9577d99");
+
+// Flags stating if should begin connecting and if the connection is up
+static boolean doConnect = false;
+static boolean connected = false;
+
+// Address of the peripheral device. Address will be found during scanning...
+static BLEAddress *pServerAddress;
+
+// Characteristicd that we want to read
+static BLERemoteCharacteristic *temperatureCharacteristic;
+static BLERemoteCharacteristic *humidityCharacteristic;
+
+// Activate notify
+const uint8_t notificationOn[] = {0x1, 0x0};
+const uint8_t notificationOff[] = {0x0, 0x0};
+
+// Variables to store temperature and humidity
+char *temperatureChar;
+char *humidityChar;
+
+// Flags to check whether new temperature and humidity readings are available
+boolean newTemperature = false;
+boolean newHumidity = false;
+
+// When the BLE Server sends a new temperature reading with the notify property
+static void temperatureNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
+                                      uint8_t *pData, size_t length, bool isNotify)
 {
-  Serial.println("switchState is here");
-  if (state)
+  // store temperature value
+  temperatureChar = (char *)pData;
+  newTemperature = true;
+}
+
+// When the BLE Server sends a new humidity reading with the notify property
+static void humidityNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
+                                   uint8_t *pData, size_t length, bool isNotify)
+{
+  // store humidity value
+  humidityChar = (char *)pData;
+  newHumidity = true;
+  Serial.print(newHumidity);
+}
+
+// Connect to the BLE Server that has the name, Service, and Characteristics
+bool connectToServer(BLEAddress pAddress)
+{
+  BLEClient *pClient = BLEDevice::createClient();
+
+  // Connect to the remove BLE Server.
+  pClient->connect(pAddress);
+  Serial.println(" - Connected to server");
+
+  // Obtain a reference to the service we are after in the remote BLE server.
+  BLERemoteService *pRemoteService = pClient->getService(bmeServiceUUID);
+  if (pRemoteService == nullptr)
   {
-    Serial.println("ops false");
+    Serial.print("Failed to find our service UUID: ");
+    Serial.println(bmeServiceUUID.toString().c_str());
+    return (false);
+  }
+
+  // Obtain a reference to the characteristics in the service of the remote BLE server.
+  temperatureCharacteristic = pRemoteService->getCharacteristic(temperatureCharacteristicUUID);
+  humidityCharacteristic = pRemoteService->getCharacteristic(humidityCharacteristicUUID);
+
+  if (temperatureCharacteristic == nullptr || humidityCharacteristic == nullptr)
+  {
+    Serial.print("Failed to find our characteristic UUID");
     return false;
   }
-  else
-  {
-    Serial.println("ops true");
-    return true;
-  }
+  Serial.println(" - Found our characteristics");
+
+  // Assign callback functions for the Characteristics
+  temperatureCharacteristic->registerForNotify(temperatureNotifyCallback);
+  humidityCharacteristic->registerForNotify(humidityNotifyCallback);
+  return true;
 }
+
+// Callback function that gets called, when another device's advertisement has been received
+class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
+{
+  void onResult(BLEAdvertisedDevice advertisedDevice)
+  {
+    if (advertisedDevice.getName() == bleServerName)
+    {                                                                 // Check if the name of the advertiser matches
+      advertisedDevice.getScan()->stop();                             // Scan can be stopped, we found what we are looking for
+      pServerAddress = new BLEAddress(advertisedDevice.getAddress()); // Address of advertiser is the one we need
+      doConnect = true;                                               // Set indicator, stating that we are ready to connect
+      Serial.println("Device found. Connecting!");
+    }
+  }
+};
 
 void setup()
 {
+  // Start serial communication
   Serial.begin(115200);
+  Serial.println("Starting Arduino BLE Client application...");
 
-  // SERfr1002.begin(115200, SERIAL_8N1, 16, 17); // uart port for hlk-fr1002 face recogniton module with baud rate 115200 bps, 8_data_bit, No_parity, 1_stop_bit
+  // Init BLE device
+  BLEDevice::init("");
 
-  // led setup
-  pinMode(ledA, OUTPUT);
-  pinMode(ledB, OUTPUT);
+  // Retrieve a Scanner and set the callback we want to use to be informed when we
+  // have detected a new device.  Specify that we want active scanning and start the
+  // scan to run for 30 seconds.
+  BLEScan *pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setActiveScan(true);
+  pBLEScan->start(30);
 }
+
 void loop()
 {
-  // 0.5ms finish write for loop
-
-  // delay(500);                          // wait fr1002 to initial
-  // if (STATE != "sendRecg_waitRespons") // add lidar dsitance condition
-  // {
-  //   if (SERfr1002.availableForWrite())
-  //   {
-  //     for (int i = 0; i < 8; i++)
-  //     {
-  //       SERfr1002.write(go_recognization[i]);
-  //       STATE = "sendRecg_waitRespons";
-  //     }
-  //   }
-  //   // face match: 0xEF 0xAA 0x00 0x00 0x26 0x12 0x00 (36bytes) 0x23
-  //   //             EF AA 00 00 26 12 00 00 01 73 61 78 00 00
-  //   // face fail: 0xEF 0xAA 0x00 0x00 0x26 0x12 0x0D (36bytes) 0x23
-  //   delay(1000);
-  //   vector<uint16_t>
-  //       DATA = {};
-  //   uint16_t dat;
-  //   for (int d = 0; d < 44; d++)
-  //   {
-  //     dat = SERfr1002.read();
-  //     Serial.printf("%x ", dat);
-  //     DATA.push_back(dat);
-  //   }
-  //   Serial.println();
-  // }
-  // // 0.7ms finish to receive
-
-  // delay(10000);
-
-  STATE = "standby";
-
-  if (whichKeyPress(keyboardOutput, keyboardInput) != -1)
+  // If the flag "doConnect" is true then we have scanned for and found the desired
+  // BLE Server with which we wish to connect.  Now we connect to it.  Once we are
+  // connected we set the connected flag to be true.
+  if (doConnect == true)
   {
-    STATE = "checkPSWD";
-    // keyboard password part, detail look on productdesign.excalidraw
-    while (STATE == "checkPSWD")
+    if (connectToServer(*pServerAddress))
     {
-      pswd.push_back(whichKeyPress(keyboardOutput, keyboardInput)); // save the key into an array(actully vector)
-      if (pswd.size() == 100)
-      {
-        int keyBeenPressed = wipeJitter(pswd);
-        if (keyBeenPressed != -1)
-        {
-          realpswd.push_back(keyBeenPressed);
-          ledBlink(ledA, 1, 50);
-          if (testState)
-          {
-            Serial.printf("add to \"%d\" password\n", keyBeenPressed);
-          }
-        }
-        vector<int> clearpswd;
-        pswd.swap(clearpswd);
-      }
-
-      if (whichKeyPress(keyboardOutput, keyboardInput) == -9)
-      {
-        // print real pasw
-        if (testState)
-        {
-          Serial.print("realpswd is: ");
-          for (int i = 0; i < realpswd.size(); i++)
-          {
-            Serial.printf("_%d", realpswd[i]);
-          }
-          Serial.println();
-        }
-
-        STATE = "verifyPSWD_wipeJitter";
-
-        if (verifyPSWD(realpswd) == "TRUE") // match, open the door
-        {
-          Serial.println(2);
-          ledBlink(ledA, 5, 80);
-          STATE = "standby";
-          delay(1000);
-        }
-        else if (verifyPSWD(realpswd) == "LOCK") // match, lock/unlock the door
-        {
-          lockState = switchState(lockState);
-
-          if (testState)
-          {
-            if (lockState)
-            {
-              Serial.print("\nsend lock door signal\n");
-            }
-            else
-            {
-              Serial.print("\nsend unlock door signal\n");
-            }
-          }
-
-          STATE = "standby";
-          delay(1000);
-        }
-        else if (verifyPSWD(realpswd) == "TEST")
-        {
-          testState = switchState(testState);
-          if (testState)
-          {
-            Serial.println("test mode");
-          }
-          else
-          {
-            Serial.println("exit test mode");
-          }
-        }
-        else // do nothing but red led
-        {
-          Serial.print("verify wrong\n");
-          ledBlink(ledB, 5, 80);
-          STATE = "undefined";
-        };
-        realpswd.clear();
-      }
-      else if (whichKeyPress(keyboardOutput, keyboardInput) == -6) // click "C" to clear
-      {
-        vector<int> clearpswd;
-        pswd.swap(clearpswd);
-        realpswd.swap(clearpswd);
-        STATE = "verifyPSWD_wipeJitter";
-        delay(500);
-      }
+      Serial.println("We are now connected to the BLE Server.");
+      // Activate the Notify property of each Characteristic
+      temperatureCharacteristic->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t *)notificationOn, 2, true);
+      humidityCharacteristic->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t *)notificationOn, 2, true);
+      connected = true;
     }
+    else
+    {
+      Serial.println("We have failed to connect to the server; Restart your device to scan for nearby BLE server again.");
+    }
+    doConnect = false;
   }
+  // if new temperature readings are available, print in the OLED
+  if (newTemperature && newHumidity)
+  {
+    newTemperature = false;
+    newHumidity = false;
+  }
+  delay(1000); // Delay a second between loops.
 }

@@ -1,156 +1,220 @@
 #include <Arduino.h>
+// keyboard part
 #include <vector>
-using std::vector;
+using namespace std;
 
-vector<int> pswd;                                                       // initialize a password vector(array) to store the key user press
-int keyboardMap[4][3] = {{7, 8, 9}, {4, 5, 6}, {1, 2, 3}, {-6, 0, -9}}; // keyboardMap[i][j], it depend on you
-int keyboardOutput[3] = {1, 1, 1};                                      // defining gpio output pin
-int keyboardInput[4] = {2, 2, 2, 2};                                    // defining gpio input pin
-hw_timer_t *timer = NULL;                                               // timer for password input timeout
-String STATE;
-HardwareSerial SerialPort(2); // using UART2
+#include <keyboardMatrix.h>
 
-/**
- * @brief detect which key been pressed
- * @note keyboard map
- *           0 1 2     j    i for raw, i<=4
- *       0 | 7 8 9 |        j for column, j<=3
- *       1 | 4 5 6 |        "*" is -6
- *       2 | 1 2 3 |        "#" is -9
- *       3 | * 0 # |
- *       i
- * @date 2023.6.20
- * @author weiyoudong，drinktoomuchsax
- * @version 0.0.2
- */
-int whichKeyPress(int GPIO_output[3], int GPIO_input[4])
+// STATE indicate the state of esp32. It could be syandby, verifyPSWD_wipeJitter, undifened and etc
+String STATE = "undifeined";
+// face recognition part
+// #include <fr1002.h>
+
+HardwareSerial SERfr1002(2); // rename Serial2 into SERfr1002 (stand for serial for fr1002)
+
+// keyboard part
+// vector<int> setpassword = {x, x , x, x};       // set your password in keyboardMatrix lib !!!
+vector<int> pswd;                  // initialize a password vector(array) to store the key user press
+vector<int> realpswd;              // realpswd
+int keyboardOutput[3] = {3, 4, 5}; // defining gpio output pin
+#define key0 9
+#define key1 12
+#define key2 13
+#define key3 8
+int keyboardInput[4] = {key0, key1, key2, key3}; // defining gpio input pin
+
+// face recognition part
+uint8_t set_standby[6] = {0xEF, 0xAA, 0x23, 0x00, 0x00, 0x23};
+uint8_t get_status[6] = {0xEF, 0xAA, 0x11, 0x00, 0x00, 0x11};
+uint8_t go_recognization[8] = {0xEF, 0xAA, 0x12, 0x00, 0x02, 0x00, 0x0A, 0x1A}; // timeout 10s, parity is 0x1A
+uint8_t get_usernameANDid[6] = {0xEF, 0xAA, 0x24, 0x00, 0x00, 0x24};
+
+// led setup
+bool testState = false;
+bool lockState = false;
+
+const int ledA = 10;
+const int ledB = 11;
+
+void ledBlink(int whichLed, int citcleTime, int delatTime)
 {
-    for (int j = 0; j < 3; j++) // this is output loop
+    for (int Z = 0; Z < citcleTime; Z++)
     {
-        pinMode(GPIO_output[j], HIGH);
-        for (int i = 0; i < 4; i++) // this is input loop
+        digitalWrite(whichLed, HIGH);
+        delay(delatTime);
+        digitalWrite(whichLed, LOW);
+        delay(delatTime);
+    }
+    if (lockState)
+    {
+        digitalWrite(ledB, HIGH);
+    }
+}
+
+bool switchState(bool state)
+{
+    if (testState)
+    {
+        Serial.println("switchState is here");
+    }
+    if (state)
+    {
+        if (testState)
         {
-            pinMode(GPIO_input[j], INPUT);
-            if (GPIO_input[j] == HIGH)
-            {
-                return keyboardMap[i][j];
-            }
-            else
-                return -1; // return -1 for find nothing
+            Serial.println("ops false");
         }
-        pinMode(GPIO_output[j], LOW);
-    }
-    return -1; // return -1 for find nothing
-}
-
-/**
- * @brief save the press key into a longlong int vector
-  // the pswd here would be like -1-1-1-1-1222-1-1-1-1-1-1-1-100-100-100000-1-1-1-1-1-1-12-12222-1-1-1-1-1-133-1-13333
- * @date 2023.6.21, happy birthday drinktoomuchsax, wish myself a happy life :)
- * @author drinktoomuchsax,weiyoudong
- * @version 0.0.1
- */
-
-vector<int> saveKeyToPswd(int GPIO_output[3], int GPIO_input[4], vector<int> PSWD) // capital locked PSWD for function
-{
-    PSWD.push_back(whichKeyPress(GPIO_output, GPIO_input));
-    // the pswd here would be like -1-1-1-1-1222-1-1-1-1-1-1-1-100-100-100000-1-1-1-1-1-1-12-12222-1-1-1-1-1-133-1-13333
-    return PSWD;
-}
-
-/**
- * @brief find a way to wipe off the jitter of key pressing
- * @date 2023.6.22
- * @author drinktoomuchsax
- * @version 0.0.1
- */
-vector<int> wipeJitter(vector<int> rawPSWD)
-{
-    int lastSavedKey = -1;
-    int nowSaveKey;
-    vector<int> realPSWD;
-    for (int i = 0; i < sizeof(rawPSWD); i++)
-    {
-        if (rawPSWD[i] == -1)
-        {
-        }
-    }
-}
-
-/**
- * @brief passwords verifing, using "xxx" represent wahtever key, the real password is hiden in the key.
- *        so, the actual password woulb be defined as xxx20231xxxxxxxxx , "x" is whatever number except "#", "2023" is the real password and following 1 is user identify bit to record who open the door.
- *        The user could keep typing and typing but once them press "enter", the password would be verifyed.
- * @date 2023.6.20
- * @author drinktoomuchsax
- * @version 0.0.1
- */
-bool verifyPSWD(vector<int> PSWD)
-{
-    int setpassword[4] = {6,
-                          0,
-                          1,
-                          1}; // set your password here !!!
-    int realPSWD[8];
-    for (int i = 0; i < 8; i++)
-    {
-        realPSWD[i] = PSWD[i];
-    }
-    bool one, two, three, four;
-    one = (setpassword[0] == realPSWD[3]);
-    two = (setpassword[1] == realPSWD[4]);
-    three = (setpassword[2] == realPSWD[5]);
-    four = (setpassword[3] == realPSWD[6]);
-    if (one && two && three && four) // all four bit is right, the
-    {
-        return true;
+        return false;
     }
     else
-        return false;
-}
-
-void keyboardEvent()
-{
-}
-void ARDUINO_ISR_ATTR resetSTATE()
-{
-    Serial.print("time out");
+    {
+        if (testState)
+        {
+            Serial.println("ops true");
+        }
+        return true;
+    }
 }
 
 void setup()
 {
-
     Serial.begin(115200);
-    SerialPort.begin(57600, SERIAL_8N2, 16, 17);
-    hw_timer_t *timer = timerBegin(0, 80, true); // timer 0, div 80ms, increasing count
-    timerAttachInterrupt(timer, &resetSTATE, true);
-    timerAlarmWrite(timer, 1000 * 1000 * 10, false); // set time in us
-}
 
+    // SERfr1002.begin(115200, SERIAL_8N1, 16, 17); // uart port for hlk-fr1002 face recogniton module with baud rate 115200 bps, 8_data_bit, No_parity, 1_stop_bit
+
+    // led setup
+    pinMode(ledA, OUTPUT);
+    pinMode(ledB, OUTPUT);
+}
 void loop()
 {
+    // 0.5ms finish write for loop
+
+    // delay(500);                          // wait fr1002 to initial
+    // if (STATE != "sendRecg_waitRespons") // add lidar dsitance condition
+    // {
+    //   if (SERfr1002.availableForWrite())
+    //   {
+    //     for (int i = 0; i < 8; i++)
+    //     {
+    //       SERfr1002.write(go_recognization[i]);
+    //       STATE = "sendRecg_waitRespons";
+    //     }
+    //   }
+    //   // face match: 0xEF 0xAA 0x00 0x00 0x26 0x12 0x00 (36bytes) 0x23
+    //   //             EF AA 00 00 26 12 00 00 01 73 61 78 00 00
+    //   // face fail: 0xEF 0xAA 0x00 0x00 0x26 0x12 0x0D (36bytes) 0x23
+    //   delay(1000);
+    //   vector<uint16_t>
+    //       DATA = {};
+    //   uint16_t dat;
+    //   for (int d = 0; d < 44; d++)
+    //   {
+    //     dat = SERfr1002.read();
+    //     Serial.printf("%x ", dat);
+    //     DATA.push_back(dat);
+    //   }
+    //   Serial.println();
+    // }
+    // // 0.7ms finish to receive
+
+    // delay(10000);
+
     STATE = "standby";
+
     if (whichKeyPress(keyboardOutput, keyboardInput) != -1)
     {
         STATE = "checkPSWD";
         // keyboard password part, detail look on productdesign.excalidraw
-        timerWrite(timer, 0);
-        timerAlarmEnable(timer); // enable interrupt
         while (STATE == "checkPSWD")
         {
-            saveKeyToPswd(keyboardOutput, keyboardInput, pswd);
+            pswd.push_back(whichKeyPress(keyboardOutput, keyboardInput)); // save the key into an array(actully vector)
+            if (pswd.size() == 100)
+            {
+                int keyBeenPressed = wipeJitter(pswd);
+                if (keyBeenPressed != -1)
+                {
+                    realpswd.push_back(keyBeenPressed);
+                    ledBlink(ledA, 1, 50);
+                    if (testState)
+                    {
+                        Serial.printf("add to \"%d\" password\n", keyBeenPressed);
+                    }
+                }
+                vector<int> clearpswd;
+                pswd.swap(clearpswd);
+            }
+
             if (whichKeyPress(keyboardOutput, keyboardInput) == -9)
             {
+                // print real pasw
+                if (testState)
+                {
+                    Serial.print("realpswd is: ");
+                    for (int i = 0; i < realpswd.size(); i++)
+                    {
+                        Serial.printf("_%d", realpswd[i]);
+                    }
+                    Serial.println();
+                }
+
                 STATE = "verifyPSWD_wipeJitter";
+
+                if (verifyPSWD(realpswd) == "TRUE") // match, open the door
+                {
+                    uint8_t open = 0x01;
+                    Serial.write(open);
+                    ledBlink(ledA, 5, 80);
+                    STATE = "standby";
+                    delay(1000);
+                }
+                else if (verifyPSWD(realpswd) == "LOCK") // match, lock/unlock the door
+                {
+                    lockState = switchState(lockState);
+
+                    if (testState)
+                    {
+                        if (lockState)
+                        {
+                            Serial.print("\nsend lock door signal\n");
+                        }
+                        else
+                        {
+                            Serial.print("\nsend unlock door signal\n");
+                        }
+                    }
+                    uint8_t lock = 0x03;
+                    Serial.write(lock);
+                    STATE = "standby";
+                    delay(1000);
+                }
+                else if (verifyPSWD(realpswd) == "TEST")
+                {
+                    testState = switchState(testState);
+                    if (testState)
+                    {
+                        Serial.println("test mode");
+                    }
+                    else
+                    {
+                        Serial.println("exit test mode");
+                    }
+                }
+                else // do nothing but red led
+                {
+                    Serial.print("verify wrong\n");
+                    ledBlink(ledB, 5, 80);
+                    STATE = "undefined";
+                };
+                realpswd.clear();
+            }
+            else if (whichKeyPress(keyboardOutput, keyboardInput) == -6) // click "C" to clear
+            {
+                vector<int> clearpswd;
+                pswd.swap(clearpswd);
+                realpswd.swap(clearpswd);
+                STATE = "verifyPSWD_wipeJitter";
+                delay(500);
             }
         }
-        if (verifyPSWD(wipeJitter(pswd))) // send match to inMoudle
-        {
-            Serial.print("well, what you input is right.");
-        }
-        else // sned fail to nModule
-        {
-            Serial.print("no!!!!!!!!");
-        };
     }
 }

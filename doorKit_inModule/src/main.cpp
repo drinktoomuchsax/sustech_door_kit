@@ -1,152 +1,119 @@
+#include <Arduino.h>
+
+const int lockRED = 13;
 /*********
   Rui Santos
   Complete instructions at https://RandomNerdTutorials.com/esp32-ble-server-client/
   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 *********/
-#include <Arduino.h>
-#include <WiFi.h>
 
-const int ledGreen = 13;
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+#include <Wire.h>
 
-// WIFI part
-const char *ssid = "1106-SBPool-Door_1";
-const char *password = "01234567";
+// Default Temperature is in Celsius
+// Comment the next line for Temperature in Fahrenheit
+#define temperatureCelsius
 
-WiFiServer server(80);
+// BLE server name
+#define bleServerName "BME280_ESP32"
 
-String header;
-// GPIO define
-// 23 lockBLUE
-// 22 nothingBUTgreen
-// 21 lockRED
-// 19 open
-const int lockRED = 6;
-const int openDoor = 7;
-String gpio23 = "off";
-String gpio22 = "off";
-String openDoorState = "off";
-String lockREDState = "off";
-// two key
-const int lockRedInput = 12;
-const int openDoorInput = 18;
+float temp;
+float tempF;
+float hum;
 
-/**
- * @brief
- *
- */
+// Timer variables
+unsigned long lastTime = 0;
+unsigned long timerDelay = 30000;
 
-void setHigh(int whichPin)
+bool deviceConnected = false;
+
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
+#define SERVICE_UUID "91bad492-b950-4226-aa2b-4ede9fa42f59"
+
+// Temperature Characteristic and Descriptor
+#ifdef temperatureCelsius
+BLECharacteristic bmeTemperatureCelsiusCharacteristics("cba1d466-344c-4be3-ab3f-189f80dd7518", BLECharacteristic::PROPERTY_NOTIFY);
+BLEDescriptor bmeTemperatureCelsiusDescriptor(BLEUUID((uint16_t)0x2902));
+#else
+BLECharacteristic bmeTemperatureFahrenheitCharacteristics("f78ebbff-c8b7-4107-93de-889a6a06d408", BLECharacteristic::PROPERTY_NOTIFY);
+BLEDescriptor bmeTemperatureFahrenheitDescriptor(BLEUUID((uint16_t)0x2902));
+#endif
+
+// Humidity Characteristic and Descriptor
+BLECharacteristic bmeHumidityCharacteristics("ca73b3ba-39f6-4ab3-91ae-186dc9577d99", BLECharacteristic::PROPERTY_NOTIFY);
+BLEDescriptor bmeHumidityDescriptor(BLEUUID((uint16_t)0x2903));
+
+// Setup callbacks onConnect and onDisconnect
+class MyServerCallbacks : public BLEServerCallbacks
 {
-  digitalWrite(lockRED, LOW);
-  digitalWrite(openDoor, LOW);
-  digitalWrite(whichPin, HIGH);
-}
-
-void switchBetweenOpen(bool DELAY)
-{
-  if (openDoorState == "on")
+  void onConnect(BLEServer *pServer)
   {
-    digitalWrite(lockRED, LOW);
-    digitalWrite(openDoor, LOW);
-    openDoorState = "off";
-    lockREDState = "off";
-    Serial.println("open off");
-    if (DELAY)
-    {
-      delay(500);
-    }
-  }
-  else if (openDoorState == "off")
+    deviceConnected = true;
+  };
+  void onDisconnect(BLEServer *pServer)
   {
-    digitalWrite(lockRED, LOW);
-    digitalWrite(openDoor, HIGH);
-    openDoorState = "on";
-    lockREDState = "off";
-    Serial.println("open on");
-    if (DELAY)
-    {
-      delay(500);
-    }
+    deviceConnected = false;
   }
-}
-
-void switchBetweenLock(bool DELAY)
-{
-  if (lockREDState == "on")
-  {
-    digitalWrite(lockRED, LOW);
-    digitalWrite(openDoor, LOW);
-    Serial.println("lock off");
-    lockREDState = "off";
-    openDoorState = "off";
-    if (DELAY)
-    {
-      delay(500);
-    }
-  }
-  else if (lockREDState == "off")
-  {
-    digitalWrite(lockRED, HIGH);
-    digitalWrite(openDoor, LOW);
-    Serial.println("lock on");
-    lockREDState = "on";
-    openDoorState = "off";
-    if (DELAY)
-    {
-      delay(500);
-    }
-  }
-}
+};
 
 void setup()
 {
+  // Start serial communication
   Serial.begin(115200);
 
-  Serial.print(" AP (Access Point)…");
-  // set gpio pin
-  pinMode(lockRED, OUTPUT);
-  pinMode(openDoor, OUTPUT);
-  digitalWrite(lockRED, LOW);
-  digitalWrite(openDoor, LOW);
+  // Create the BLE Device
+  BLEDevice::init(bleServerName);
 
-  pinMode(lockRedInput, INPUT);
-  pinMode(openDoorInput, INPUT);
+  // Create the BLE Server
+  BLEServer *pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
 
-  pinMode(ledGreen, OUTPUT);
-  digitalWrite(ledGreen, LOW);
+  // Create the BLE Service
+  BLEService *bmeService = pServer->createService(SERVICE_UUID);
 
-  // WIFI part
-  Serial.print("Setting AP (Access Point)…");
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(ssid, password); // launch the access point
-  Serial.println("Wait 100 ms for AP_START...");
-  delay(100);
-  Serial.println("Setting the AP");
-  IPAddress Ip(192, 168, 110, 6); // setto IP Access Point same as gateway
-  IPAddress NMask(255, 255, 255, 0);
-  WiFi.softAPConfig(Ip, Ip, NMask);
-  IPAddress ip = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(ip);
-  server.begin();
+  // Create BLE Characteristics and Create a BLE Descriptor
+  // Temperature
+  bmeService->addCharacteristic(&bmeTemperatureCelsiusCharacteristics);
+  bmeTemperatureCelsiusDescriptor.setValue("BME temperature Celsius");
+  bmeTemperatureCelsiusCharacteristics.addDescriptor(&bmeTemperatureCelsiusDescriptor);
+  // Humidity
+  bmeService->addCharacteristic(&bmeHumidityCharacteristics);
+  bmeHumidityDescriptor.setValue("BME humidity");
+  bmeHumidityCharacteristics.addDescriptor(new BLE2902());
+
+  // Start the service
+  bmeService->start();
+
+  // Start advertising
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pServer->getAdvertising()->start();
+  Serial.println("Waiting a client connection to notify...");
 }
 
 void loop()
 {
-  /*| comman | meaning       |
-    | ------ | ------------- |
-    | 0x11   | open the door |
-    | 0xcc   | lock the door |*/
-  if (Serial.available())
+  if (deviceConnected)
   {
-    if (Serial.read() == 1)
+    if ((millis() - lastTime) > timerDelay)
     {
-      switchBetweenOpen(false);
-    }
-    else if (Serial.read() == 2)
-    {
-      switchBetweenLock(false);
+      char hello[5] = {'h', 'e', 'l', 'l', 'o'};
+      // Set temperature Characteristic value and notify connected client
+      bmeTemperatureCelsiusCharacteristics.setValue(hello);
+      bmeTemperatureCelsiusCharacteristics.notify();
+      Serial.print("sent hello");
+
+      // Set humidity Characteristic value and notify connected client
+      char world[5] = {'w', 'o', 'r', 'l', 'd'};
+      bmeHumidityCharacteristics.setValue(world);
+      bmeHumidityCharacteristics.notify();
+      Serial.print("world");
+      lastTime = millis();
     }
   }
 
@@ -221,32 +188,24 @@ void loop()
             {
               Serial.println("GPIO 26 on");
               openDoorState = "on";
-              lockREDState = "off";
               digitalWrite(openDoor, HIGH);
-              digitalWrite(lockRED, LOW);
             }
             else if (header.indexOf("GET /openDoorState/off") >= 0)
             {
               Serial.println("GPIO 26 off");
               openDoorState = "off";
-              lockREDState = "off";
               digitalWrite(openDoor, LOW);
-              digitalWrite(lockRED, LOW);
             }
             else if (header.indexOf("GET /lockREDState/on") >= 0)
             {
               Serial.println("GPIO 27 on");
-              openDoorState = "off";
               lockREDState = "on";
-              digitalWrite(openDoor, LOW);
               digitalWrite(lockRED, HIGH);
             }
             else if (header.indexOf("GET /lockREDState/off") >= 0)
             {
               Serial.println("GPIO 27 off");
-              openDoorState = "off";
               lockREDState = "off";
-              digitalWrite(openDoor, LOW);
               digitalWrite(lockRED, LOW);
             }
 
