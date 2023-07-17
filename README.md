@@ -37,8 +37,8 @@ _This page is not available in [English](README.en.md) yet._
   - [:money\_with\_wings:物料清单（全功能-预算敏感版本）](#money_with_wings物料清单全功能-预算敏感版本)
   - [:wrench:所需工具](#wrench所需工具)
   - [门的部分](#门的部分)
-  - [门外模块（exModule）](#门外模块exmodule)
   - [门内模块（inModule）](#门内模块inmodule)
+  - [门外模块（exModule）](#门外模块exmodule)
 - [To Do](#to-do)
 
 
@@ -71,6 +71,7 @@ _This page is not available in [English](README.en.md) yet._
 | 4       | 内模块pcb打板             | 1片  | 略                                               | ￥20          | [Gerber文件](pcbDesign/imModule/inModule_Gerber.zip)                                                                                         | 嘉立创价格，可以换其他家，洞洞板手焊（￥2.5），立创eda抄板白嫖（￥0）                                                                                              |
 | 5       | 外模块pcb打板             | 1片  | 略                                               | ￥40左右      | [Gerber文件](pcbDesign/exMoudle/sustech_door_kit-exModule-Gerber.zip)                                                                        | 同上，但是需要两片，一片用作焊接，一篇用作背板安装                                                                                                               |
 | 6       | 继电器                    | 1个  | 4路5v红板                                        | ￥12          | [淘宝优信电子](https://item.taobao.com/item.htm?spm=a1z09.2.0.0.67002e8dnQlfYj&id=549692985984&_u=53t2jj8gef8e)                              | 要买5v的，不然不能开发板直接触发                                                                                                                                 |
+| 6.1     | 16pin排母                 | 6个  | 1*16P单排母座                                    | ￥1           | [淘宝优信电子](https://item.taobao.com/item.htm?spm=a230r.1.14.22.43cb7ce2fQNwRq&id=522579376259&ns=1&abbucket=13#detail)                    | 用来插开发板的。测试供电正常再插上去，不然会烧:(。并且如果每次更新固件都要整个拆下来，麻烦发                                                                     |
 | 7       | :keyboard:轴体            | 14个 | cherryMX的封装就能够焊上，具体轴体按需选择       | ￥10          | [淘宝不知名店铺](https://item.taobao.com/item.htm?spm=a1z09.2.0.0.67002e8dnQlfYj&id=626986550029&_u=53t2jj8g20a3)                            |                                                                                                                                                                  |
 | 8       | :keyboard:键帽            | 12个 | 标准的十字孔能插上轴体就行                       | ￥6.3         | [桃堡~或者去网吧悄悄扣走windows键~](https://item.taobao.com/item.htm?spm=a21n57.1.0.0.33f6523cuvqG1C&id=704738471960&ns=1&abbucket=0#detail) | 有实力可以加钱上点好的                                                                                                                                           |
 | 9       | :nut_and_bolt:M3x25螺丝   | 5个  | 直径3mm，长度25mm，0.5螺距                       | ￥0.3         | [1688](https://detail.1688.com/offer/572533111204.html?spm=a2615.2177701.autotrace-smt_offerGeneral.6.20a22b78zPF4M8)                        | 其实3个就够了，剩下2个惩罚不仔细看备注的强迫症                                                                                                                   |
@@ -152,7 +153,7 @@ _This page is not available in [English](README.en.md) yet._
 
 > **这是一个手艺活，比较考验耐心**
 
-> **你需要用美工刀或者笔刀将线的外层剥开，露出里面的金属。注意不要直接切断，特别是红色和黑色的电源线，没人知道这个系统断电重启之后还能不能正常工作（如果你切断了可以在readme里更新一下结果）**
+> **你需要用美工刀或者笔刀将线的外层剥开，露出里面的金属。注意不要直接切断，特别是红色和黑色的电源线，没人知道这个系统断电重启之后还可能会出现哪些问题**
 
 > **项目只会用到4根线，分别是红色、黑色、黄色、白色。所以你只需要剥4根线**
 
@@ -199,23 +200,39 @@ _This page is not available in [English](README.en.md) yet._
 
 > 至此拆门部分结束
 
+## 门内模块（inModule）
+### 1.焊接
+#### a.开发板排母
+#### b.排线
+#### c.
+### 2.开发板刷入程序
+#### a.更改参数
+### 3.安装
+#### a.继电器接门地线
+#### b.继电器接开发版控制线、电源线、地线
+#### c.测试输出电压
+#### d.安装开发板
+#### e.热熔胶胶固定
+#### f.焊接门12v电源线
+
+### 4.测试
+#### a.WiFi开门功能
+#### b.按键功能
 
 ## 门外模块（exModule）
 ### 1.焊接
-### 2.开发板刷入程序
+#### a.电阻、开发板
+#### b.雷达、排针
+#### c.人脸识别模块
+
+### 2.组装
+### 3.开发板刷入程序
 #### a.更改参数
-### 3.配置模块
+### 4.配置模块
 #### a.人脸注册
 #### b.修改雷达门限
-### 4.调试
-### 5.组装
-## 门内模块（inModule）
-### 1.焊接
-### 2.开发板刷入程序
-#### a.更改参数
-### 3.调试
-### 4.安装
-#### a.接线
+### 5.调试
+
 # To Do
 对功能有任何想法和提议，都欢迎提交issue。当然，保证不保证解决。
 - [ ] 完善文档
