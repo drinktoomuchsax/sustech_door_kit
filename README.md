@@ -59,6 +59,8 @@ _This page is not available in [English](README.en.md) yet._
 
 如果对某一步的详细程度感到不满意或有任何疑惑，欢迎提交issue。
 
+如果你的网络有问题不能加载出图片，可以看南科手册上的版本。
+
 ## :money_with_wings:物料清单（全功能-预算敏感版本）
 > 第一步，下面全部买回来
 
