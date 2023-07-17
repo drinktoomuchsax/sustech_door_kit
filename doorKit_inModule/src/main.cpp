@@ -221,24 +221,32 @@ void loop()
             {
               Serial.println("GPIO 26 on");
               openDoorState = "on";
+              lockREDState = "off";
               digitalWrite(openDoor, HIGH);
+              digitalWrite(lockRED, LOW);
             }
             else if (header.indexOf("GET /openDoorState/off") >= 0)
             {
               Serial.println("GPIO 26 off");
               openDoorState = "off";
+              lockREDState = "off";
               digitalWrite(openDoor, LOW);
+              digitalWrite(lockRED, LOW);
             }
             else if (header.indexOf("GET /lockREDState/on") >= 0)
             {
               Serial.println("GPIO 27 on");
+              openDoorState = "off";
               lockREDState = "on";
+              digitalWrite(openDoor, LOW);
               digitalWrite(lockRED, HIGH);
             }
             else if (header.indexOf("GET /lockREDState/off") >= 0)
             {
               Serial.println("GPIO 27 off");
+              openDoorState = "off";
               lockREDState = "off";
+              digitalWrite(openDoor, LOW);
               digitalWrite(lockRED, LOW);
             }
 
