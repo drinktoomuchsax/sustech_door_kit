@@ -14,12 +14,6 @@ void ledBlink(int circle)
     delay(80);
   }
 }
-/*********
-  Rui Santos
-  Complete instructions at https://RandomNerdTutorials.com/esp32-ble-server-client/
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
-  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*********/
 
 #include "BLEDevice.h"
 
@@ -28,17 +22,17 @@ void ledBlink(int circle)
 #define temperatureCelsius
 
 // BLE Server name (the other ESP32 name running the server sketch)
-#define bleServerName "BME280_ESP32"
+#define bleServerName "door_kit"
 
 /* UUID's of the service, characteristic that we want to read*/
 // BLE Service
-static BLEUUID bmeServiceUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");
+static BLEUUID doorServiceUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");
 
 // BLE Characteristics
-static BLEUUID temperatureCharacteristicUUID("cba1d466-344c-4be3-ab3f-189f80dd7518");
+static BLEUUID openCharacteristicUUID("cba1d466-344c-4be3-ab3f-189f80dd7518");
 
 // Humidity Characteristic
-static BLEUUID humidityCharacteristicUUID("ca73b3ba-39f6-4ab3-91ae-186dc9577d99");
+static BLEUUID lockCharacteristicUUID("ca73b3ba-39f6-4ab3-91ae-186dc9577d99");
 
 // Flags stating if should begin connecting and if the connection is up
 static boolean doConnect = false;
@@ -48,39 +42,39 @@ static boolean connected = false;
 static BLEAddress *pServerAddress;
 
 // Characteristicd that we want to read
-static BLERemoteCharacteristic *temperatureCharacteristic;
-static BLERemoteCharacteristic *humidityCharacteristic;
+static BLERemoteCharacteristic *openCharacteristic;
+static BLERemoteCharacteristic *lockCharacteristic;
 
 // Activate notify
 const uint8_t notificationOn[] = {0x1, 0x0};
 const uint8_t notificationOff[] = {0x0, 0x0};
 
 // Variables to store temperature and humidity
-char *temperatureChar;
-char *humidityChar;
+char *openChar;
+char *lockChar;
 
 // Flags to check whether new temperature and humidity readings are available
-boolean newTemperature = false;
-boolean newHumidity = false;
+boolean newOpen = false;
+boolean newLock = false;
 
 // When the BLE Server sends a new temperature reading with the notify property
-static void temperatureNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
-                                      uint8_t *pData, size_t length, bool isNotify)
+static void openNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
+                               uint8_t *pData, size_t length, bool isNotify)
 {
   // store temperature value
-  temperatureChar = (char *)pData;
-  newTemperature = true;
-  Serial.println(*temperatureChar);
+  openChar = (char *)pData;
+  newOpen = true;
+  Serial.println(*openChar);
 }
 
 // When the BLE Server sends a new humidity reading with the notify property
-static void humidityNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
-                                   uint8_t *pData, size_t length, bool isNotify)
+static void lockNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
+                               uint8_t *pData, size_t length, bool isNotify)
 {
   // store humidity value
-  humidityChar = (char *)pData;
-  newHumidity = true;
-  Serial.println(*humidityChar);
+  lockChar = (char *)pData;
+  newLock = true;
+  Serial.println(*lockChar);
 }
 
 // Connect to the BLE Server that has the name, Service, and Characteristics
@@ -93,19 +87,19 @@ bool connectToServer(BLEAddress pAddress)
   Serial.println(" - Connected to server");
 
   // Obtain a reference to the service we are after in the remote BLE server.
-  BLERemoteService *pRemoteService = pClient->getService(bmeServiceUUID);
+  BLERemoteService *pRemoteService = pClient->getService(doorServiceUUID);
   if (pRemoteService == nullptr)
   {
     Serial.print("Failed to find our service UUID: ");
-    Serial.println(bmeServiceUUID.toString().c_str());
+    Serial.println(doorServiceUUID.toString().c_str());
     return (false);
   }
 
   // Obtain a reference to the characteristics in the service of the remote BLE server.
-  temperatureCharacteristic = pRemoteService->getCharacteristic(temperatureCharacteristicUUID);
-  humidityCharacteristic = pRemoteService->getCharacteristic(humidityCharacteristicUUID);
+  openCharacteristic = pRemoteService->getCharacteristic(openCharacteristicUUID);
+  lockCharacteristic = pRemoteService->getCharacteristic(lockCharacteristicUUID);
 
-  if (temperatureCharacteristic == nullptr || humidityCharacteristic == nullptr)
+  if (openCharacteristic == nullptr || lockCharacteristic == nullptr)
   {
     Serial.print("Failed to find our characteristic UUID");
     return false;
@@ -113,8 +107,8 @@ bool connectToServer(BLEAddress pAddress)
   Serial.println(" - Found our characteristics");
 
   // Assign callback functions for the Characteristics
-  temperatureCharacteristic->registerForNotify(temperatureNotifyCallback);
-  humidityCharacteristic->registerForNotify(humidityNotifyCallback);
+  openCharacteristic->registerForNotify(openNotifyCallback);
+  lockCharacteristic->registerForNotify(lockNotifyCallback);
   return true;
 }
 
@@ -162,8 +156,8 @@ void loop()
     {
       Serial.println("We are now connected to the BLE Server.");
       // Activate the Notify property of each Characteristic
-      temperatureCharacteristic->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t *)notificationOn, 2, true);
-      humidityCharacteristic->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t *)notificationOn, 2, true);
+      openCharacteristic->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t *)notificationOn, 2, true);
+      lockCharacteristic->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t *)notificationOn, 2, true);
       connected = true;
     }
     else
@@ -173,10 +167,10 @@ void loop()
     doConnect = false;
   }
   // if new temperature readings are available, print in the OLED
-  if (newTemperature && newHumidity)
+  if (newOpen && newLock)
   {
-    newTemperature = false;
-    newHumidity = false;
+    newOpen = false;
+    newLock = false;
   }
   delay(1000); // Delay a second between loops.
 }
