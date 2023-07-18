@@ -26,9 +26,9 @@ exModule using a lib write by drinktoomuchsax and weiyoudong
 ## communication protocol between inModule and exModule
 | comman | meaning       |
 | ------ | ------------- |
-| 0x00   | open the door |
+| 0x11   | open the door |
 | 0xcc   | lock the door |
-| 0x11   | standby       |
+| 0x00   | standby       |
 
 
 # 硬件pcb和装配

@@ -204,6 +204,9 @@ _This page is not available in [English](README.en.md) yet._
 ### 1.焊接
 ### 2.开发板刷入程序
 #### a.更改参数
+- 密码
+- 蓝牙UUID
+- 
 ### 3.配置模块
 #### a.人脸注册
 #### b.修改雷达门限
