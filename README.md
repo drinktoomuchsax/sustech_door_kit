@@ -209,6 +209,12 @@ _This page is not available in [English](README.en.md) yet._
 #### b.排线
 ### 2.开发板刷入程序
 #### a.更改参数
+- bleServerName
+- BLE UUIDs
+- WiFi name
+- WiFi pswd
+- realpswd
+- 
 ### 3.安装
 #### a.继电器接门内地线
 #### b.继电器接开发版控制线、电源线、地线

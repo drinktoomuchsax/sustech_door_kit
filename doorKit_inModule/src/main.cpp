@@ -17,77 +17,48 @@ void ledBlink(int circle)
 
 #include "BLEDevice.h"
 
-// Default Temperature is in Celsius
-// Comment the next line for Temperature in Fahrenheit
-#define temperatureCelsius
-
-// BLE Server name (the other ESP32 name running the server sketch)
-#define bleServerName "door_kit"
-
-/* UUID's of the service, characteristic that we want to read*/
-// BLE Service
-static BLEUUID doorServiceUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");
-
-// BLE Characteristics
-static BLEUUID openCharacteristicUUID("cba1d466-344c-4be3-ab3f-189f80dd7518");
-
-// Humidity Characteristic
-static BLEUUID lockCharacteristicUUID("ca73b3ba-39f6-4ab3-91ae-186dc9577d99");
-
-// Flags stating if should begin connecting and if the connection is up
-static boolean doConnect = false;
+#define bleServerName "1106_door_kit"                                          // BLE Server name (the other ESP32 name running the server sketch)
+static BLEUUID doorServiceUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");        /* UUID's of the service, characteristic that we want to read*/
+static BLEUUID openCharacteristicUUID("cba1d466-344c-4be3-ab3f-189f80dd7518"); // open Characteristics
+static BLEUUID lockCharacteristicUUID("ca73b3ba-39f6-4ab3-91ae-186dc9577d99"); // lock Characteristic
+static boolean doConnect = false;                                              // Flags stating if should begin connecting and if the connection is up
 static boolean connected = false;
-
-// Address of the peripheral device. Address will be found during scanning...
-static BLEAddress *pServerAddress;
-
-// Characteristicd that we want to read
-static BLERemoteCharacteristic *openCharacteristic;
+static BLEAddress *pServerAddress;                  // Address of the peripheral device. Address will be found during scanning...
+static BLERemoteCharacteristic *openCharacteristic; // Characteristicd that we want to read
 static BLERemoteCharacteristic *lockCharacteristic;
-
-// Activate notify
-const uint8_t notificationOn[] = {0x1, 0x0};
+const uint8_t notificationOn[] = {0x1, 0x0}; // Activate notify
 const uint8_t notificationOff[] = {0x0, 0x0};
-
-// Variables to store temperature and humidity
-char *openChar;
+char *openChar; // Variables to store temperature and humidity
 char *lockChar;
-
-// Flags to check whether new temperature and humidity readings are available
-boolean newOpen = false;
+boolean newOpen = false; // Flags to check whether new temperature and humidity readings are available
 boolean newLock = false;
 
-// When the BLE Server sends a new temperature reading with the notify property
 static void openNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
-                               uint8_t *pData, size_t length, bool isNotify)
+                               uint8_t *pData, size_t length, bool isNotify) // When the BLE Server sends a new open reading with the notify property
+
 {
-  // store temperature value
   openChar = (char *)pData;
   newOpen = true;
   Serial.println(*openChar);
 }
 
-// When the BLE Server sends a new humidity reading with the notify property
 static void lockNotifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic,
                                uint8_t *pData, size_t length, bool isNotify)
+
 {
-  // store humidity value
   lockChar = (char *)pData;
   newLock = true;
   Serial.println(*lockChar);
 }
 
-// Connect to the BLE Server that has the name, Service, and Characteristics
-bool connectToServer(BLEAddress pAddress)
+bool connectToServer(BLEAddress pAddress) // Connect to the BLE Server that has the name, Service, and Characteristics
 {
   BLEClient *pClient = BLEDevice::createClient();
 
-  // Connect to the remove BLE Server.
-  pClient->connect(pAddress);
+  pClient->connect(pAddress); // Connect to the remove BLE Server.
   Serial.println(" - Connected to server");
 
-  // Obtain a reference to the service we are after in the remote BLE server.
-  BLERemoteService *pRemoteService = pClient->getService(doorServiceUUID);
+  BLERemoteService *pRemoteService = pClient->getService(doorServiceUUID); // Obtain a reference to the service we are after in the remote BLE server.
   if (pRemoteService == nullptr)
   {
     Serial.print("Failed to find our service UUID: ");
@@ -95,8 +66,7 @@ bool connectToServer(BLEAddress pAddress)
     return (false);
   }
 
-  // Obtain a reference to the characteristics in the service of the remote BLE server.
-  openCharacteristic = pRemoteService->getCharacteristic(openCharacteristicUUID);
+  openCharacteristic = pRemoteService->getCharacteristic(openCharacteristicUUID); // Obtain a reference to the characteristics in the service of the remote BLE server.
   lockCharacteristic = pRemoteService->getCharacteristic(lockCharacteristicUUID);
 
   if (openCharacteristic == nullptr || lockCharacteristic == nullptr)
@@ -106,19 +76,17 @@ bool connectToServer(BLEAddress pAddress)
   }
   Serial.println(" - Found our characteristics");
 
-  // Assign callback functions for the Characteristics
-  openCharacteristic->registerForNotify(openNotifyCallback);
+  openCharacteristic->registerForNotify(openNotifyCallback); // Assign callback functions for the Characteristics
   lockCharacteristic->registerForNotify(lockNotifyCallback);
   return true;
 }
 
-// Callback function that gets called, when another device's advertisement has been received
-class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
+class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks // Callback function that gets called, when another device's advertisement has been received
 {
   void onResult(BLEAdvertisedDevice advertisedDevice)
   {
-    if (advertisedDevice.getName() == bleServerName)
-    {                                                                 // Check if the name of the advertiser matches
+    if (advertisedDevice.getName() == bleServerName) // Check if the name of the advertiser matches
+    {
       advertisedDevice.getScan()->stop();                             // Scan can be stopped, we found what we are looking for
       pServerAddress = new BLEAddress(advertisedDevice.getAddress()); // Address of advertiser is the one we need
       doConnect = true;                                               // Set indicator, stating that we are ready to connect
@@ -136,9 +104,7 @@ void setup()
   // Init BLE device
   BLEDevice::init("");
 
-  // Retrieve a Scanner and set the callback we want to use to be informed when we
-  // have detected a new device.  Specify that we want active scanning and start the
-  // scan to run for 30 seconds.
+  // Retrieve a Scanner and set the callback we want to use to be informed when we have detected a new device.  Specify that we want active scanning and start the scan to run for 30 seconds.
   BLEScan *pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setActiveScan(true);
@@ -147,9 +113,7 @@ void setup()
 
 void loop()
 {
-  // If the flag "doConnect" is true then we have scanned for and found the desired
-  // BLE Server with which we wish to connect.  Now we connect to it.  Once we are
-  // connected we set the connected flag to be true.
+  // If the flag "doConnect" is true then we have scanned for and found the desired BLE Server with which we wish to connect.  Now we connect to it.  Once we are connected we set the connected flag to be true.
   if (doConnect == true)
   {
     if (connectToServer(*pServerAddress))
@@ -166,7 +130,7 @@ void loop()
     }
     doConnect = false;
   }
-  // if new temperature readings are available, print in the OLED
+
   if (newOpen && newLock)
   {
     newOpen = false;
